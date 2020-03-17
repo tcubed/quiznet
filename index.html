@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>QuizNet</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+    <style>
+    .fakeimg {
+      height: 200px;
+      background: #aaa;
+    }
+    .jumbotron {padding: 0.5rem}
+    input{ text-align:center}
+
+    .card-body{padding:0.5rem;}
+    .label{margin-bottom:0.1rem;}
+    .form-group{margin-bottom:0.25rem;}
+    </style>
+
+<script>
+
+function submitJump() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        txt= this.responseText
+        if(txt.length<1){txt='no response';}
+        document.getElementById("quizStatus").innerHTML = txt;
+    }
+    };
+    var e=document.getElementById('quizid')
+    var quizid=e.value;
+
+    var url='quiznet.php?d='+quizid+'&q='+M.quizzer+'&t='+M.jumpTime.getTime();
+    console.log(url)
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send()
+    //xhttp.send("fname=Henry&lname=Ford");
+
+    //xhttp.open("POST", "quiznet.php", true);
+    //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    //xhttp.send("fname=Henry&lname=Ford");
+}
+
+function mytime(d){
+    var txt=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()
+    txt+=','+d.getHours()+':'+d.getMinutes()+':'+(d.getSeconds()+d.getMilliseconds()/1000).toFixed(3)
+    return txt
+}
+function jumpKeyPress(){
+    //console.log('keypress')
+    if(M.ready){
+        // get time
+        M.jumpTime = new Date();
+        console.log('ready: jump at '+mytime(M.jumpTime))
+        M.ready=false
+        //
+        // play sound
+        //
+        document.getElementById('play').play();
+
+        // get all jumper keys
+        for (var ii=0;ii<4;ii++){
+            var e=document.getElementById('key'+(ii+1))
+            M.jumperKeys.push(e.value)
+        }
+    }
+    else{
+        console.log('not ready')
+    }
+}
+function jumpKeyUp(){
+    
+    console.log('keyup')
+    //console.log(d)
+    if(M.readJump==false){
+        ez=document.getElementById('jumpzone')
+        var keyp=ez.value[0]
+        console.log('detected keypress: ['+keyp+']')
+
+        // which jumper
+        var iusr=M.jumperKeys.indexOf(keyp)
+        var nm='none'
+        if(iusr<0){
+            txt='invalid key!'
+            ez.style.backgroundColor='#FFBBBB'
+        }
+        else{
+            e=document.getElementById('usr'+(iusr+1))
+            nm=e.value
+            txt=nm+' pressed ['+keyp+'] first at this computer at '+mytime(M.jumpTime)
+            ez.style.backgroundColor='#BBFFBB'
+        }
+
+        setMessage(txt)
+        M.readJump=true
+        M.quizzer=nm
+
+        document.getElementById("quizStatus").innerHTML = 'waiting for server';
+        submitJump()
+    }
+    else{
+        console.log('already read jump')
+    }
+}
+
+function setMessage(t){
+    var e=document.getElementById('benchStatus')
+    e.innerHTML=t
+    //e.value=t
+}
+function reset(){
+    M.ready=true
+    M.readJump=false
+    M.quizzer=''
+    M.jumpTime=-1
+    setMessage('')
+    ez=document.getElementById('jumpzone')
+    ez.style.backgroundColor='#FFFFFF'
+    ez.value=''
+}
+function testJump(){
+
+    var dt=new Date();
+    console.log('now is:'+dt)
+
+    // 
+    ez=document.getElementById('jumpzone')
+    k=document.getElementById('key1')
+    ez.value=k.value
+
+    if(dt.getSeconds()<15){
+        var thisMinute=dt.getMinutes();
+        var tt=new Date(dt.getFullYear(), dt.getMonth(), 
+            dt.getDate(), dt.getHours(), thisMinute, 15, 0)
+    }
+    else if(dt.getSeconds()<30){
+        var thisMinute=dt.getMinutes();
+        var tt=new Date(dt.getFullYear(), dt.getMonth(), 
+            dt.getDate(), dt.getHours(), thisMinute, 30, 0)
+    }
+    else if(dt.getSeconds()<45){
+        var thisMinute=dt.getMinutes();
+        var tt=new Date(dt.getFullYear(), dt.getMonth(), 
+            dt.getDate(), dt.getHours(), thisMinute, 45, 0)
+    }
+    else{
+        var nextMinute=dt.getMinutes()+1;
+        var tt=new Date(dt.getFullYear(), dt.getMonth(), 
+            dt.getDate(), dt.getHours(), nextMinute, 0, 0)
+    }
+    
+    console.log('next minute is:'+tt)
+
+    var countDownDate = tt.getTime();
+    // Update the count down every 1 second
+    var x = setInterval(function() {
+        // Get today's date and time
+        var nowd= new Date()
+        var now = nowd.getTime();
+        //console.log('now:'+now)
+        // Find the distance between now and the count down date
+        var distance = countDownDate - now;
+        
+
+        // Time calculations for days, hours, minutes and seconds
+        //var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        //var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        //var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        //var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        //var seconds = Math.ceil(distance / 1000);
+        // Display the result in the element with id="demo"
+        strtime=nowd.getHours() + ":"+nowd.getMinutes()+":"+nowd.getSeconds();
+        document.getElementById("divtimer").innerHTML = strtime;
+        
+        // If the count down is finished, write some text
+        if (distance < 0) {
+            clearInterval(x);
+            //document.getElementById("divtimer").innerHTML = "DONE";
+            jumpKeyPress();
+            jumpKeyUp();
+            document.getElementById("divtimer").innerHTML=""
+        }
+    }, 1);
+
+
+}
+
+
+// setup
+var M={ready:true,
+       readJump:false,
+       jumperKeys:[],jumpTime:-1,quizzer:''}
+
+
+</script>
+</head>
+<body>
+<div class="jumbotron text-center" style="margin-bottom:0">
+    <h1>Online Jump Quiz</h1>
+    <a href="mobile.html">Mobile version</a>
+</div>
+
+<div class="container-fluid">
+
+    <div class="card-deck">
+        <div class="card">
+            <div class="card-body">
+                <!--<p>Pick unique quiz id (e.g. WGLD_myteam)</p>-->
+                <div class="form-group">
+                    <label for="quizid">
+                        <a href="#" data-toggle="popover" title="Quiz ID" 
+                            data-content="Pick unique quiz id (e.g. WGLD_myteam)">Quiz ID</a>:
+
+                    </label>
+                    <input type="text" class="form-control-sm" id="quizid" value="myquiz">
+                </div>
+            </div>
+
+        </div>
+    
+        <div class="card">
+            <div class="card-body">
+                
+                <a href="#timesync" class="btn" data-toggle="collapse">Time Synchronization</a>
+                <div id="timesync" class="collapse">
+                    The online quiz uses your machines clock to register your answer.  Please make sure your clock
+                    is synced online.
+                    <a href="#" class="btn btn-primary" data-toggle="popoverimg" 
+                    title="Sync time in Windows 10" data-img="images/win10datetime.png">Windows 10</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <button class="btn btn-primary" onclick="testJump();">Test Jump</button>
+                <div id="divtimer"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Quizzers</h4>
+        </div>
+    
+        <div class="card-body">
+            <div class="row">
+                <div class="col-3">
+                    <div class="form-group">
+                        <label for="usr1">Quizzer 1:</label>
+                        <input type="text" class="form-control-sm" id="usr1" value="quizzer">
+                    </div>
+                    <div class="form-group">
+                        <label for="key1">Jump Key:</label>
+                        <input type="text" class="form-control-sm" id="key1" value="a">
+                    </div>
+                </div>
+                
+                <div class="col-3">
+                    <div class="form-group">
+                        <label for="usr2">Quizzer 2:</label>
+                        <input type="text" class="form-control-sm" id="usr2">
+                    </div>
+                    <div class="form-group">
+                        <label for="key2">Jump Key:</label>
+                        <input type="text" class="form-control-sm" id="key2" value="v">
+                    </div>
+                </div>
+
+                <div class="col-3">
+                    <div class="form-group">
+                        <label for="usr3">Quizzer 3:</label>
+                        <input type="text" class="form-control-sm" id="usr3">
+                    </div>
+                    <div class="form-group">
+                        <label for="key3">Jump Key:</label>
+                        <input type="text" class="form-control-sm" id="key3" value="m">
+                    </div>
+                </div>
+
+                <div class="col-3">
+                    <div class="form-group">
+                        <label for="usr4">Quizzer 4:</label>
+                        <input type="text" class="form-control-sm" id="usr4">
+                    </div>
+                    <div class="form-group">
+                        <label for="key4">Jump Key:</label>
+                        <input type="text" class="form-control-sm" id="key4" value="p">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Jump Zone</h4>
+                </div>
+                <div class="card-body">
+
+                
+                    <div class="form-group">
+                        <label for="jumpzone">Put your cursor in the jumpzone.  [Jump] with your key.  Click to reset jump.</label>
+                        <textarea class="form-control" rows="5" id="jumpzone" 
+                            onkeypress="jumpKeyPress();"
+                            onkeyup="jumpKeyUp();"
+                            onmousedown="reset()" >
+                        </textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-3">BENCH STATUS: </div>
+                        <div class="col-9" id="benchStatus"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">QUIZ STATUS: </div>
+                        <div class="col-9" id="quizStatus"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="col-2">
+        </div>
+    </div>
+
+</div>
+
+<div class="jumbotron text-center" style="margin-bottom:0">
+    <p>Intended for C&MA Bible Quizzing.</p>
+</div>
+
+<audio id="play" src="assets/beep-07.wav"></audio>
+
+<script>
+    $(document).ready(function(){
+        // popovers initialization - on click
+        //https://mdbootstrap.com/docs/jquery/javascript/popovers/
+        $('[data-toggle="popover"]').popover();
+
+        $('[data-toggle="popoverimg"]').popover({
+        html: true,
+        trigger: 'click',
+        placement: 'bottom',
+        content: function () { return '<img src="' + $(this).data('img') + '" width="300px"/>'; }
+        });
+
+    });
+
+
+</script>
+
+</body>
+</html>

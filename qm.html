@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>QuizNet</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <style>
+    .fakeimg {
+      height: 200px;
+      background: #aaa;
+    }
+    .jumbotron {padding: 1rem}
+    input{ text-align:center}
+    </style>
+
+<script>
+function mytime(dt){
+    console.log('mytime')
+    console.log(dt)
+    //var txt=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()
+    var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
+    return txt
+}
+function benchMessage(obj){
+    if(obj.jump=="none"){
+        txt='<h6>No one has jumped yet.</h6>'
+    }
+    else{
+
+        txt='<h6>'+obj.jump+' had the first jump.</h6>';
+        txt+='<table border=1 style="margin-top:20px">';
+        for(var ii=0;ii<obj.benches.length;ii+=1){
+            var res=obj.benches[ii].split(',');
+            var dt=new Date(Number(res[0]));
+            console.log(dt)
+            txt+='<tr><td>'+res[1]+'</td><td>'+mytime(dt)+'</td></tr>';
+        }
+        txt+='</table>'
+    }
+    return txt
+}
+function pollBenches() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        var obj=JSON.parse(this.responseText);
+        //if(txt.length<1){txt='no response';}
+        console.log(obj)
+        
+        txt=benchMessage(obj)
+        document.getElementById("benchMessage").innerHTML = txt;
+    }
+    };
+    var e=document.getElementById('quizid')
+    var quizid=e.value;
+
+    var url='quiznet.php?d='+quizid+'&p=1&r=1';
+    console.log(url)
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send()
+    //xhttp.send("fname=Henry&lname=Ford");
+
+    //xhttp.open("POST", "quiznet.php", true);
+    //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    //xhttp.send("fname=Henry&lname=Ford");
+}
+
+</script>
+
+</head>
+<body>
+
+    <div class="jumbotron text-center" style="margin-bottom:0">
+        <h1>Online Quiz</h1>
+        <p>Quizmaster Page</p>
+    </div>
+    
+    <div class="container-fluid">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+            </div>
+            <div class="panel-body">
+                <div class="row" style="margin-top:20px">
+                    <div class="col-4">
+                        <h4>Quiz ID</h4>
+                    </div>
+                    <div class="col-8">
+                        <input class="form-control" type="text" id="quizid" value="myquiz">
+                    </div>
+
+                </div>
+                <div class="row" style="margin-top:20px">
+                    <div class="col-1"></div>
+                    <div class="col-10" style="margin: auto 0">
+                        <button class="btn btn-block btn-primary" id="poll" onclick="pollBenches();">Read Benches</button>
+                    </div>
+                    <div class="col-1"></div>
+                </div>
+                <div class="row" style="margin-top:20px"></div>
+                <div class="row">
+                    <div class="col-1"></div>
+                    <div class="col-10 text-center" id="benchMessage" >
+
+                    </div>
+                    <div class="col-1"></div>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6">
+                <button class="btn btn-block btn-primary" id="timer5" onclick="mytimer(5);">5</button>
+            </div>
+            <div class="col-6">
+                <button class="btn btn-block btn-primary" id="timer30" onclick="mytimer(30);">30</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="jumbotron text-center" style="margin-bottom:0" id="divtimer">
+    </div>
+    
+    <audio id="play" src="assets/beep-07.wav"></audio>
+
+    <script>
+        // Set the date we're counting down to
+        function mytimer(delay){
+            var countDownDate = new Date().getTime()+delay*1000;
+            console.log('countdowndate:'+countDownDate)
+            // Update the count down every 1 second
+            var x = setInterval(function() {
+                // Get today's date and time
+                var now = new Date().getTime();
+                console.log('now:'+now)
+                // Find the distance between now and the count down date
+                var distance = countDownDate - now;
+                
+                // Time calculations for days, hours, minutes and seconds
+                //var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                //var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                //var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                //var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                var seconds = Math.ceil(distance / 1000);
+                // Display the result in the element with id="demo"
+                document.getElementById("divtimer").innerHTML = seconds + "s ";
+                
+                // If the count down is finished, write some text
+                if (distance < 0) {
+                    clearInterval(x);
+                    document.getElementById("divtimer").innerHTML = "DONE";
+                    document.getElementById('play').play();
+                }
+            }, 1000);
+        }
+        
+        
+        
+    </script>
+
+</body>
+</html>
