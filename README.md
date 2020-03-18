@@ -43,6 +43,12 @@ The quizmaster/coach should send out teleconference details and a unique quiz ID
    - They jump
    - The quizmaster presses "Read Benches" to verify they read the jump.
    - Quizzer can reset to test the next quizzer.
+   
+![quizmaster](/images/quizmaster.png | height=100)
+
+![desktop](/images/desktop.png | height=100)
+
+![mobile](/images/mobile.png | height=100)
 
 # FAQ
 
