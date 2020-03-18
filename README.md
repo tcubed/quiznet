@@ -16,6 +16,10 @@ The purpose of this package is to allow bible quizzers to practice and quiz with
 This project is in active development (as of March 2020), and so may experience some changes.  I'm not a 
 web programmer by profession -- so play nice and don't try to break it!
 
+Desktop View | Mobile View | Quizmaster (Mobile)
+------------ | ----------- | -------------------
+<img src="/images/desktop.png" alt="quizmaster" height="300"/>|<img src="/images/mobile.png" alt="quizmaster" height="300"/>|<img src="/images/quizmaster.png" alt="quizmaster" height="300"/>
+
 # Instructions
 
 ### Before the quiz
@@ -44,12 +48,6 @@ The quizmaster/coach should send out teleconference details and a unique quiz ID
    - The quizmaster presses "Read Benches" to verify they read the jump.
    - Quizzer can reset to test the next quizzer.
    
-![quizmaster](/images/quizmaster.png | height=100)
-
-![desktop](https://raw.github.com/tcubed/quiznet/blob/master/images/desktop.png | height=100)
-
-![mobile](/images/mobile.png | height=100)
-
 # FAQ
 
 ### General
