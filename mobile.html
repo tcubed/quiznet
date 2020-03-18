@@ -49,9 +49,22 @@ function submitJump() {
     //xhttp.send("fname=Henry&lname=Ford");
 }
 
-function mytime(d){
+function mytime_old(d){
     var txt=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()
     txt+=','+d.getHours()+':'+d.getMinutes()+':'+(d.getSeconds()+d.getMilliseconds()/1000).toFixed(3)
+    return txt
+}
+function mytime(dt){
+    //console.log('mytime')
+    //console.log(dt)
+    //var txt=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()
+    var sec=dt.getSeconds()
+    if(sec<10){sec='0'+sec;}
+    var msec=dt.getMilliseconds()
+    if(msec<10){msec='0'+msec;}
+    if(msec<100){msec='0'+msec;}
+    var txt=dt.getHours()+':'+dt.getMinutes()+':'+sec+'.'+msec;
+    //var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
     return txt
 }
 function jumpKeyPress(){
@@ -179,7 +192,7 @@ var snd1 = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU
 <body>
 <div class="jumbotron text-center" style="margin-bottom:0">
     <h1>Quiznet Quiz</h1>
-    <a href="index.html">Desktop version</a>
+    <a href="index.html">Go to the Desktop version</a>
 </div>
 
 <div class="container-fluid">

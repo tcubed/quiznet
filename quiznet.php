@@ -1,5 +1,13 @@
 <?php
 
+function cmpjump($a,$b){
+    //return $a[0]-$b[0];
+    $av=explode(',',$a)[0];
+    $bv=explode(',',$b)[0];
+    if ($av==$bv) return 0;
+    return ($av<$bv)?-1:1;
+}
+
 function getJump($quizfile){
     //https://www.w3schools.com/PHP/php_arrays_sort.asp
     //echo 'file contents<br>';
@@ -12,37 +20,20 @@ function getJump($quizfile){
         unset($arr[$nrows-1]);
     }
 
-    // search for first jump
-    
-    $mint=-1;
-    $minq='';
-    foreach($arr as $line){
-        //if(strlen($line)==0){break;}
-        $row=explode(',',$line);
-        if($mint<0){
-            $mint=(int)$row[0];$minq=$row[1];
-        }
-        if($row[0]<$mint){$mint=$row[0];$minq=$row[1];}
-    }
-    $ret=array('jump'=>$minq,'benches'=>$arr);
-    
+    usort($arr,"cmpjump");
+    $timeQuizzer=explode(',',$arr[0]);
 
-    /*
-    $arrsort=array();
-    foreach($arr as $line){
-        $row=explode(',',$line);
-        $arrsort[$row[1]]=(int)$row[0];
-    }
-    asort($arrsort);
-    $ret=array('jump'=>array_keys($arrsort)[0],'benches'=>$arrsort);
-    */
+    $ret=array('jump'=>$timeQuizzer[1],'benches'=>$arr);
+
+    
     echo json_encode($ret);
 }
 
-// get district
-$district=$_GET["d"];
+// get quizid
+$quizid=$_GET["d"];
+$quizid = preg_replace("/[^A-Za-z0-9]/", '', $quizid);
 //quizfile
-$quizfile=sys_get_temp_dir().'/quiz'.$district.'.csv';
+$quizfile=sys_get_temp_dir().'/quiz'.$quizid.'.csv';
 
 // jump requests
 if(array_key_exists("q",$_GET)){

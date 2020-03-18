@@ -16,14 +16,21 @@
     }
     .jumbotron {padding: 1rem}
     input{ text-align:center}
+    .table td, .table th{ padding: 0.1rem;}
     </style>
 
 <script>
 function mytime(dt){
-    console.log('mytime')
-    console.log(dt)
+    //console.log('mytime')
+    //console.log(dt)
     //var txt=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()
-    var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
+    var sec=dt.getSeconds()
+    if(sec<10){sec='0'+sec;}
+    var msec=dt.getMilliseconds()
+    if(msec<10){msec='0'+msec;}
+    if(msec<100){msec='0'+msec;}
+    var txt=dt.getHours()+':'+dt.getMinutes()+':'+sec+'.'+msec;
+    //var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
     return txt
 }
 function benchMessage(obj){
@@ -33,14 +40,16 @@ function benchMessage(obj){
     else{
 
         txt='<h6>'+obj.jump+' had the first jump.</h6>';
-        txt+='<table border=1 style="margin-top:20px">';
+        txt+='<table class="table table-striped" border=1 style="margin-top:20px">';
+        txt+='<thead><tr><th>Quizzer</th><th>Timestamp</th></thead>';
+        txt+='<tbody>'
         for(var ii=0;ii<obj.benches.length;ii+=1){
             var res=obj.benches[ii].split(',');
             var dt=new Date(Number(res[0]));
             console.log(dt)
             txt+='<tr><td>'+res[1]+'</td><td>'+mytime(dt)+'</td></tr>';
         }
-        txt+='</table>'
+        txt+='</tbody></table>'
     }
     return txt
 }
