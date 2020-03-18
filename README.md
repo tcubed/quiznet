@@ -46,7 +46,7 @@ The quizmaster/coach should send out teleconference details and a unique quiz ID
    
 ![quizmaster](/images/quizmaster.png | height=100)
 
-![desktop](/images/desktop.png | height=100)
+![desktop](https://raw.github.com/tcubed/quiznet/blob/master/images/desktop.png | height=100)
 
 ![mobile](/images/mobile.png | height=100)
 
