@@ -46,16 +46,16 @@ The quizmaster/coach should send out teleconference details and a unique quiz ID
    - Call out their name
    - They jump
    - The quizmaster presses "Read Benches" to verify they read the jump.
-   - Quizzer can reset to test the next quizzer.
+   - Quizzer "resets" their device, and the quizmasters calls out the next quizzer.
    
 # FAQ
 
 ### General
-#### What can I used for a quiz ID?
+#### What can I use for a quiz ID?
 You should be able to use almost anything within reason -- but don't use spaces or weird characters.  For the
 various groups who may be conducting practices or meets, I would recommend the following conventions:
 
- - myDistrict_myDivision_myTeam for team practices (e.g. WGLD_A_witnesses)
+ - myDistrict_myDivision_myTeam for team practices (e.g. WGLD_B_witnesses)
  - myDistrict_myDivision for meets (e.g. WGLD_A)
 
 #### What can I use for a quizzer name?
