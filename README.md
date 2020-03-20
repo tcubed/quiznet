@@ -71,6 +71,9 @@ No.  The code timestamps the jump as soon as a key is pressed.  The playing of t
 is dependent on the sound file and how it is played in the browser.  Our testing indicates the beep does lag the
 timestamp.
 
+#### Does it matter what web browser I use?
+The application has been tested on Chrome, FireFox, and Edge on a Windows 10 machine, as well as Safari on iPhone.  If you have issues, please let us know along with the device and browser you were using.
+
 #### How can I check the timestamp on my jump?
 The "Test Jump" button is meant for this purpose.  It will automatically jump as close to the next 15 second increment
 as possible.  In this you'll be able to see the timestamp occurs normally within a few milliseconds of the the 15 second
@@ -87,3 +90,7 @@ With PC's only the fastest of the all the quizzers on that PC is logged and sent
 
 #### 5s and 30s timers
 These are provided for your benefit, to make it convenient to do timing from the same screen.  It doesn't affect the quiz at all.
+
+### Technical Details
+#### What is SYNC and offset?
+Even for computers that are synced with a time server, there can be a discrepancy between "now" on your device and "now" on other's devices.  Clock synchronization across multiple devices in a diverse network is an important telecommunications issue and the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) is a standard way of accomplishing this.  A simple implementation is used here to adjust the timestamps to be as close as possible to the time on the server.  The SYNC message reports an offset time in milliseconds of your device compared to the server.  This offset is applied to your timestamp, such that all quizzers have a timestamp that is referenced to the server.
