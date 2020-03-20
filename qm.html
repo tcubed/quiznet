@@ -46,7 +46,7 @@ function benchMessage(obj){
         for(var ii=0;ii<obj.benches.length;ii+=1){
             var res=obj.benches[ii].split(',');
             var dt=new Date(Number(res[0]));
-            console.log(dt)
+            //console.log(dt)
             txt+='<tr><td>'+res[1]+'</td><td>'+mytime(dt)+'</td></tr>';
         }
         txt+='</tbody></table>'

@@ -9,6 +9,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="quiznet.js"></script>
 
     <style>
     .fakeimg {
@@ -54,24 +56,26 @@ function mytime_old(d){
     txt+=','+d.getHours()+':'+d.getMinutes()+':'+(d.getSeconds()+d.getMilliseconds()/1000).toFixed(3)
     return txt
 }
-function mytime(dt){
-    //console.log('mytime')
-    //console.log(dt)
-    //var txt=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()
-    var sec=dt.getSeconds()
-    if(sec<10){sec='0'+sec;}
-    var msec=dt.getMilliseconds()
-    if(msec<10){msec='0'+msec;}
-    if(msec<100){msec='0'+msec;}
-    var txt=dt.getHours()+':'+dt.getMinutes()+':'+sec+'.'+msec;
-    //var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
-    return txt
-}
+// function mytime(dt){
+//     //console.log('mytime')
+//     //console.log(dt)
+//     //var txt=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()
+//     var sec=dt.getSeconds()
+//     if(sec<10){sec='0'+sec;}
+//     var msec=dt.getMilliseconds()
+//     if(msec<10){msec='0'+msec;}
+//     if(msec<100){msec='0'+msec;}
+//     var txt=dt.getHours()+':'+dt.getMinutes()+':'+sec+'.'+msec;
+//     //var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
+//     return txt
+// }
 function jumpKeyPress(){
     //console.log('keypress')
     if(M.ready){
         // get time
         M.jumpTime = new Date();
+        M.jumpTime.setTime(M.jumpTime.getTime()+medianoffset)
+
         console.log('ready: jump at '+mytime(M.jumpTime))
         M.ready=false
         //
@@ -80,6 +84,7 @@ function jumpKeyPress(){
         document.getElementById('play').play();
 
         // get all jumper keys
+        M.jumperKeys=[]
         for (var ii=0;ii<4;ii++){
             var e=document.getElementById('key'+(ii+1))
             M.jumperKeys.push(e.value)
@@ -205,7 +210,15 @@ function testJump(){
 
 
 }
-
+function startup(){
+    sampleRoundTrip(function(){
+            //console.log('done!');
+            console.log(offset)
+            console.log('median offset:'+medianoffset+'ms, median delay:'+mediandelay+'ms')
+            var e=document.getElementById('syncstats')
+            e.innerHTML='Offset: '+medianoffset+'ms';
+        })
+}
 
 // setup
 var M={ready:true,
@@ -249,6 +262,7 @@ var M={ready:true,
                     <a href="#" class="btn btn-primary" data-toggle="popoverimg" 
                     title="Sync time in Windows 10" data-img="images/win10datetime.png">Windows 10</a>
                 </div>
+                
             </div>
         </div>
 
@@ -336,12 +350,17 @@ var M={ready:true,
                     </div>
 
                     <div class="row">
-                        <div class="col-3">BENCH STATUS: </div>
-                        <div class="col-9" id="benchStatus"></div>
+                        <!--<div class="col-3"><strong>DEVICE:</strong></div>
+                        <div class="col-9" id="benchStatus"></div>-->
+                        <div class="col"><strong>DEVICE: </strong><span id="benchStatus"></span></div>
                     </div>
                     <div class="row">
-                        <div class="col-3">QUIZ STATUS: </div>
-                        <div class="col-9" id="quizStatus"></div>
+                        <!--<div class="col-3"><strong>SERVER: </strong></div>
+                        <div class="col-9" id="quizStatus"></div>-->
+                        <div class="col"><strong>SERVER: </strong><span id="quizStatus"></span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col"><strong>SYNC: </strong><span id="syncstats"></span></div>
                     </div>
 
                 </div>
@@ -355,7 +374,7 @@ var M={ready:true,
 </div>
 
 <div class="jumbotron text-center" style="margin-bottom:0">
-    <p>Intended for C&MA Bible Quizzing.</p>
+    <p>Intended for C&amp;MA Bible Quizzing.</p>
 </div>
 
 <audio id="play" src="assets/beep-07.wav"></audio>
@@ -372,6 +391,8 @@ var M={ready:true,
         placement: 'bottom',
         content: function () { return '<img src="' + $(this).data('img') + '" width="300px"/>'; }
         });
+
+        startup()
 
     });
 

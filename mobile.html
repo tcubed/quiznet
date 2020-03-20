@@ -9,6 +9,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="quiznet.js"></script>
 
     <style>
     .fakeimg {
@@ -54,24 +56,26 @@ function mytime_old(d){
     txt+=','+d.getHours()+':'+d.getMinutes()+':'+(d.getSeconds()+d.getMilliseconds()/1000).toFixed(3)
     return txt
 }
-function mytime(dt){
-    //console.log('mytime')
-    //console.log(dt)
-    //var txt=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()
-    var sec=dt.getSeconds()
-    if(sec<10){sec='0'+sec;}
-    var msec=dt.getMilliseconds()
-    if(msec<10){msec='0'+msec;}
-    if(msec<100){msec='0'+msec;}
-    var txt=dt.getHours()+':'+dt.getMinutes()+':'+sec+'.'+msec;
-    //var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
-    return txt
-}
+// function mytime(dt){
+//     //console.log('mytime')
+//     //console.log(dt)
+//     //var txt=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()
+//     var sec=dt.getSeconds()
+//     if(sec<10){sec='0'+sec;}
+//     var msec=dt.getMilliseconds()
+//     if(msec<10){msec='0'+msec;}
+//     if(msec<100){msec='0'+msec;}
+//     var txt=dt.getHours()+':'+dt.getMinutes()+':'+sec+'.'+msec;
+//     //var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
+//     return txt
+// }
 function jumpKeyPress(){
     //console.log('keypress')
     if(M.ready){
         // get time
         M.jumpTime = new Date();
+        M.jumpTime.setTime(M.jumpTime.getTime()+medianoffset)
+
         console.log('ready: jump at '+mytime(M.jumpTime))
         M.ready=false
 
@@ -179,6 +183,16 @@ function testJump(){
 
 
 }
+function startup(){
+    sampleRoundTrip(function(){
+            //console.log('done!');
+            //console.log(delay)
+            console.log(offset)
+            console.log('median offset:'+medianoffset+'ms, median delay:'+mediandelay+'ms')
+            var e=document.getElementById('syncstats')
+            e.innerHTML=' Offset: '+medianoffset+'ms';
+        })
+}
 
 // setup
 var M={ready:true,
@@ -228,6 +242,7 @@ var snd1 = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU
             <div class="card-body text-center">
                 <button class="btn btn-primary" onclick="testJump();">Test Jump</button>
                 <div id="divtimer"></div>
+                
             </div>
         </div>
     </div>
@@ -256,7 +271,7 @@ var snd1 = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU
             <div class="row" id="benchStatus"></div>
             <div class="row"><strong>SERVER (i.e. was my jump recorded?)</strong></div>
             <div class="row" id="quizStatus"></div>
-            
+            <div class="row"><strong>Sync stats:</strong><span id="syncstats"></span></div>
         </div>
 
         
@@ -287,6 +302,7 @@ var snd1 = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU
 
     });
 
+    startup();
 
 </script>
 
