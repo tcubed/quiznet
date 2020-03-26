@@ -3,7 +3,7 @@ Online quiz platform
 
 The purpose of this package is to allow bible quizzers to practice and quiz with one another while online.
 
-<strong>Take a look at the [Quiznet Overview](https://vimeo.com/400944887) video.</strong>
+<strong>Take a look at the <a href="https://vimeo.com/400944887" target="_blank">Quiznet Overview video</a>.</strong>
 
 ## How does online quizzing work?
 
