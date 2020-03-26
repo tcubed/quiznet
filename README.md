@@ -3,6 +3,8 @@ Online quiz platform
 
 The purpose of this package is to allow bible quizzers to practice and quiz with one another while online.
 
+<strong>Take a look at the [Quiznet Overview](https://vimeo.com/400944887) video.</strong>
+
 ## How does online quizzing work?
 
  - Teams or multiple teams attend a joint audio teleconference.
@@ -27,6 +29,7 @@ The quizmaster/coach should send out teleconference details and a unique quiz ID
 
 ### Setup
    - Turn the volume on your computer/device to the max so the quizmaster can hear it over the teleconference.
+   - Quizzers, refresh the page a few times until you get a consistent reading in the SYNC portion of the window.
    - PC quizzers:
      - Enter the names and convenient jump keys for up to 4 quizzers.  For example, the keys "a","v","m","p"
        are somewhat spaced out to allow 4 quizzers around the same laptop.
@@ -47,7 +50,10 @@ The quizmaster/coach should send out teleconference details and a unique quiz ID
    - They jump
    - The quizmaster presses "Read Benches" to verify they read the jump.
    - Quizzer "resets" their device, and the quizmasters calls out the next quizzer.
-   
+
+# Known Issues
+The Safari browser on iPhone and Apple computers seem to play the beep after a delay.  From various sources, it seems Safari reloads the beep sound each time the button is pressed, leading to the delay.  The current workaround is for the quizzers to verbally "HEY!" or the like to notify the quizzers they are jumping.  Please note that the timestamp is as soon as the button was pressed -- it is just a delay in the beep.
+
 # FAQ
 
 ### General
@@ -67,8 +73,7 @@ Yes!  There is a mobile page which works in a manner very similar to the desktop
 touch screen is (which is out of my control), but I welcome any findings in this area so we can share recommendations.
 
 #### The beep is delayed.  Does that mean my jump was recorded late?
-No.  The code timestamps the jump as soon as a key is pressed.  The playing of the beep happens after that, and 
-is dependent on the sound file and how it is played in the browser.  Our testing indicates the beep does lag the
+This is a Known Issue (see above).  Rest assured, the page timestamps the jump as soon as a key is pressed.  The playing of the beep happens after that, and is dependent on the sound file and how it is played in the browser.  Our testing indicates the beep does lag the
 timestamp.
 
 #### Does it matter what web browser I use?
