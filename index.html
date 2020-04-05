@@ -281,6 +281,7 @@ function testJumpAudio(){
     //
     var ez=document.getElementById('jumpZone')
     var edm=document.getElementById('devmsg')
+    var eds=document.getElementById('delaystats')
 
     //
     // get current time and adjust by offset
@@ -350,18 +351,23 @@ function testJumpAudio(){
         changeAudioCheck();
         return
         */
+        M.medianAudioDelay=0;
         edm.innerHTML="Hmm... delay is "+(mndly/1000).toFixed(1)+"s.  Seems too long."
     }
     else if(mndly<0){
+        M.medianAudioDelay=0;
         edm.innerHTML="Delay is negative ("+(mndly/1000).toFixed(3)+"s).  Jumped before QM?"
     }
     else{
         M.medianAudioDelay=mndly;
-        console.log(audioDelay)
-
-        var e=document.getElementById('delaystats')
-        e.innerHTML=', audio delay: '+(M.medianAudioDelay).toFixed(0)+'ms';
     }
+
+    // write audio delay to the GUI
+    var txt='';
+    if(M.medianAudioDelay>0){
+        txt=', audio delay: '+(M.medianAudioDelay).toFixed(0)+'ms';
+    }
+    eds.innerHTML=txt;
     
     //var e=document.getElementById('seqdiv');
     //e.innerHTML=((dt-M.seqStart)/1000-(M.jumpSeq.length-1)).toFixed(3);
@@ -536,6 +542,9 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
             <li class="nav-item">
                 <a class="nav-link" href="mailto:trandom@gmail.com">Support email: trandom@gmail.com</a>
             </li>
+            <li class="nav-item">
+                <p>What's new?</p>
+            </li>
             <!--
             <li class="nav-item">
               <a class="nav-link" href="#">Link</a>
@@ -545,17 +554,28 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
         </div>
       </nav>
 
-      <!--
+        <!--
+      <div class="toast">
+        <div class="toast-header">
+            Caution!
+        </div>
+        <div class="toast-body">
+            This is under active development.  Content will change!
+        </div>
+    </div>
+
+    
 <div class="jumbotron text-center" style="margin-bottom:0">
     <h1>Quiznet Quiz</h1>
     <a href="mobile.html">Go to the Mobile version</a>
 </div>
--->
+
 
 <div class="alert alert-warning alert-dismissible fade show">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <strong>Warning!</strong> This is under active development.  Content will change!
   </div>
+-->
 
 <div class="container-fluid">
 
@@ -737,6 +757,9 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
     <p>Intended for C&amp;MA Bible Quizzing.</p>
 </div>
 -->
+
+
+
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark d-fixed-bottom-sm">
     <!--<a class="navbar-brand" href="#">Quiz on!</a>-->
     <h6 style="font-size:x-small;color:#fff">Do not be anxious about anything, but in every situation, 
@@ -759,6 +782,9 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
         placement: 'bottom',
         content: function () { return '<img src="' + $(this).data('img') + '" width="300px"/>'; }
         });
+
+       // $('.toast').toast({delay: 2000});
+       // $('.toast').toast('show');
 
         startup()
 
