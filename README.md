@@ -13,10 +13,20 @@ The purpose of this package is to allow bible quizzers to practice and quiz with
    which time stamps the jump and plays a beep, letting the quiz master know to stop reading the question.
  - The quizmaster page lets them see who had the first jump.  They announce who got the jump, and proceed 
    as normal over the teleconference.
+   
+## Why Quiznet?  How is this different from other quizzing platforms?
 
-## Disclaimer
-This project is in active development (as of March 2020), and so may experience some changes.  I'm not a 
-web programmer by profession -- so play nice and don't try to break it!
+The Quiznet system was designed to work with variable-speed networks.  That is, some users have slow connections or older computers which could significantly impact quizzer jumps because of network lags.  Instead, we go around the problem, by avoiding the time-arrival issue completely.  When the quizzer jumps, we time-stamp the event, then send it on its way to the server and quizmaster -- it doesn't matter how long it takes, because the comparison will be on the time-stamp of the jump, and not when it arrived.
+
+There are three critical pieces to make this work:
+
+ 1. All the clocks have to be synced so the time-stamps can be properly compared.
+ 2. We need an estimate of the audio lag each user experiences due to the conference call.
+ 3. A mechanism to relay to the quizmaster when a jump has occurred so they can halt reading the question.
+ 
+ The time syncing is done through estimating the offset between quizzers and quizmaster and the server using the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) algorithm.  The audio lag is estimated through an audio calibration to measure the delay the quizzers are experiencing.  Both of these are handled in Quiznet.
+ 
+The last requires some way to signal the quizmaster, and there are several options.  The application will "beep", but this won't work if the quizzer is on a headset.  If they are using Zoom or the like, a clever use of the chat function can work.  As a last resort, the quizzer can call out.  All of these will lead to some "bleeding" of the question, but that is probably a reality of the situation.
 
 Desktop View | Mobile View | Quizmaster (Mobile)
 ------------ | ----------- | -------------------
@@ -35,7 +45,13 @@ The quizmaster/coach should send out teleconference details and a unique quiz ID
        are somewhat spaced out to allow 4 quizzers around the same laptop.
      - Put the cursor in the "jump zone".
    - Mobile users: enter your name.  There is a jump button.
-   - Test timestamp: use the "Test Jump" button to confirm that the timestamp happens near the closest 15second increment.
+   - Audio calibration: teleconference calls will often have a lag, and different call-ins may have different lags.
+     This calibration is meant to level the field.
+      - Quizmasters: Press <Start> to initiate a beep sequence.  Press <Mark> at the first beep only.  Press <Stop> when needed.
+      - Quizzers: After the countdown, press <Mark> at each beep.
+ 
+<img src="/images/audio_quizzer.png" alt="audio_quizzer" height="300"/>
+ 
 ### The "jump"
    - PC quizzers: press your jump key!  After the question is complete, click the mouse to reset for the next jump.
    - Mobile quizzers: Press your jump button!  After the question is complete, press the "Reset" button.
