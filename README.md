@@ -26,7 +26,7 @@ There are three critical pieces to make this work:
  
  The time syncing is done through estimating the offset between quizzers and quizmaster and the server using the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) algorithm.  The audio lag is estimated through an audio calibration to measure the delay the quizzers are experiencing.  Both of these are handled in Quiznet.
  
-The last requires some way to signal the quizmaster, and there are several options.  The application will "beep", but this won't work if the quizzer is on a headset.  If they are using Zoom or the like, a clever use of the chat function can work.  As a last resort, the quizzer can call out.  All of these will lead to some "bleeding" of the question, but that is probably a reality of the situation.
+Lastly, regarding signaling the quizmaster, and there are several options.  If they are using Zoom or the like, a clever use of the chat function (and video?) may be the best option.  The application will "beep", but sadly this won't work if the quizzer is on a headset and has been found to not work reliably across all devices.  As a last resort, the quizzer can call out, but this has problems, too.  All of these will lead to some "bleeding" of the question, but that is probably a reality of the situation.
 
 Desktop View | Mobile View | Quizmaster (Mobile)
 ------------ | ----------- | -------------------
@@ -37,14 +37,16 @@ Desktop View | Mobile View | Quizmaster (Mobile)
 ### Before the quiz
 The quizmaster/coach should send out teleconference details and a unique quiz ID that everyone will join.
 
+I would highly recommend reviewing Pacific Northwest's excellent [Virtual Quizzing](https://pnwquizzing.org/references_for_quizzing/virtual_quizzing.md) page for some best practices.
+
 ### Setup
    - Turn the volume on your computer/device to the max so the quizmaster can hear it over the teleconference.
    - Quizzers, refresh the page a few times until you get a consistent reading in the SYNC portion of the window.
-   - PC quizzers:
+   - We highly recommend quizzers and quizmaster use a personal computer for the best experience:
      - Enter the names and convenient jump keys for up to 4 quizzers.  For example, the keys "a","v","m","p"
        are somewhat spaced out to allow 4 quizzers around the same laptop.
      - Put the cursor in the "jump zone".
-   - Mobile users: enter your name.  There is a jump button.
+   - If necessary, a mobile device can be used: enter your name.  There is a jump button.
    - Audio calibration: teleconference calls will often have a lag, and different call-ins may have different lags.
      This calibration is meant to level the field.
       - Quizmasters: Press <b>Start</b> to initiate a beep sequence.  Press <b>Mark</b> at the first beep only.  Press <b>Stop</b> when needed.
@@ -93,17 +95,15 @@ This is a Known Issue (see above).  Rest assured, the page timestamps the jump a
 timestamp.
 
 #### Does it matter what web browser I use?
-The application has been tested on Chrome, FireFox, and Edge on a Windows 10 machine, as well as Safari on iPhone.  If you have issues, please let us know along with the device and browser you were using.
-
-#### How can I check the timestamp on my jump?
-The "Test Jump" button is meant for this purpose.  It will automatically jump as close to the next 15 second increment
-as possible.  In this you'll be able to see the timestamp occurs normally within a few milliseconds of the the 15 second
-interval, even if the beep happens slightly after.
+The application has been tested on Chrome, FireFox, and Edge on a Windows 10 machine, as well as Safari on iPhone.  We recommend using a personal computer for the best experience over a mobile device or tablet.  If you have issues, please let us know along with the device and browser you were using.
 
 #### What about network lags?
 Most computers are time-synced through some central time server.  So wherever you are, urban or rural, your computer 
 will put a synchronized timestamp on your jump.  Quizzer jumps are sent to the server where the original timestamps are 
-compared, so any network lags will not play a role in determining who got the first jump.
+compared, so any network lags should play a minimal role in determining who got the first jump.
+
+#### What is "audio calibration"?
+Anecdotally, we tested a Zoom call on two laptops in within the same room, with internet-audio and no video (the best internet call I could manage), and we measured up to a 1.6s delay!  Quiznet audio calibration measures this delay and applies an additional offset to the time-stamp.  For technical details, see the answer below.
 
 ### Quizmasters
 #### How come I don't see all the quizzers who jumped?
@@ -115,3 +115,6 @@ These are provided for your benefit, to make it convenient to do timing from the
 ### Technical Details
 #### What is SYNC and offset?
 Even for computers that are synced with a time server, there can be a discrepancy between "now" on your device and "now" on other's devices.  Clock synchronization across multiple devices in a diverse network is an important telecommunications issue and the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) is a standard way of accomplishing this.  A simple implementation is used here to adjust the timestamps to be as close as possible to the time on the server.  The SYNC message reports an offset time in milliseconds of your device compared to the server.  This offset is applied to your timestamp, such that all quizzers have a timestamp that is referenced to the server.
+
+#### How is the audio calibration done?
+The quizmaster initiates a sound clip which plays "3, 2, 1, beep, beep, ... " for 20 beeps at 1 second intervals.  The clip needs to be heard over the teleconference, and both the QM and the quizzer computer mark the first beep with a time stamp.  The quizzer (not the quizmaster) continues to click for 10 or more beeps so we can get the median audio delay between the server-corrected quizmaster and quizzer times.  Note that for this reason, it is also ideal that the quizmaster is also using a personal computer (even though the page is formatted for mobile at the moment).
