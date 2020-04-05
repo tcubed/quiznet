@@ -47,8 +47,8 @@ The quizmaster/coach should send out teleconference details and a unique quiz ID
    - Mobile users: enter your name.  There is a jump button.
    - Audio calibration: teleconference calls will often have a lag, and different call-ins may have different lags.
      This calibration is meant to level the field.
-      - Quizmasters: Press <Start> to initiate a beep sequence.  Press <Mark> at the first beep only.  Press <Stop> when needed.
-      - Quizzers: After the countdown, press <Mark> at each beep.
+      - Quizmasters: Press <b>Start</b> to initiate a beep sequence.  Press <b>Mark</b> at the first beep only.  Press <b>Stop</b> when needed.
+      - Quizzers: After the countdown, press <b>Mark</b> at each beep.
  
 <img src="/images/audio_quizzer.png" alt="audio_quizzer" height="300"/>
  
