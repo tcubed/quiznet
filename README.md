@@ -70,7 +70,8 @@ I would highly recommend reviewing Pacific Northwest's excellent [Virtual Quizzi
    - Quizzer "resets" their device, and the quizmasters calls out the next quizzer.
 
 # Known Issues
-The Safari browser on iPhone and Apple computers seem to play the beep after a delay.  From various sources, it seems Safari reloads the beep sound each time the button is pressed, leading to the delay.  The current workaround is for the quizzers to verbally "HEY!" or the like to notify the quizzers they are jumping.  Please note that the timestamp is as soon as the button was pressed -- it is just a delay in the beep.
+
+ - Beep delay: The Safari browser on iPhone and Apple computers seem to play the beep after a delay -- however, it seems the time-stamp  happens immediately, so it is just a delay of the beep.  From various sources, it seems Safari reloads the beep sound each time the button is pressed, leading to the delay.  Again, the best situation is to quiz from a personal computer, not a mobile device.  Moreover, it may be best to use the teleconference chat application to signal the quizmaster (see discussion above).
 
 # FAQ
 
