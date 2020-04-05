@@ -6,9 +6,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="quiznet.js"></script>
+
     <style>
     .fakeimg {
       height: 200px;
@@ -33,26 +38,39 @@ function mytime(dt){
     //var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
     return txt
 }
-function benchMessage(obj){
-    if(obj.jump=="none"){
-        txt='<h6>No one has jumped yet.</h6>'
-    }
-    else{
+// function benchMessage(obj){
+//     if(obj.jump=="none"){
+//         txt='<h6>No one has jumped yet.</h6>'
+//     }
+//     else{
+//         // get times and names
+//         var txtrows='';
+//         var dtarr=[]
+//         for(var ii=0;ii<obj.benches.length;ii+=1){
+//             var res=obj.benches[ii].split(',');
+//             var dt=new Date(Number(res[0]));
+//             //console.log(dt)
+//             txtrows+='<tr><td>'+res[1]+'</td><td>'+mytime(dt)+'</td></tr>';
+//             dtarr.push(dt)
+//         }
+//         // determine how far ahead the first jumper was compared to the second
+//         var firstLead=0;
+//         if(dtarr.length>1){
+//             firstLead=dtarr[1]-dtarr[0];
+//         }
 
-        txt='<h6>'+obj.jump+' had the first jump.</h6>';
-        txt+='<table class="table table-striped" border=1 style="margin-top:20px">';
-        txt+='<thead><tr><th>Quizzer</th><th>Timestamp</th></thead>';
-        txt+='<tbody>'
-        for(var ii=0;ii<obj.benches.length;ii+=1){
-            var res=obj.benches[ii].split(',');
-            var dt=new Date(Number(res[0]));
-            //console.log(dt)
-            txt+='<tr><td>'+res[1]+'</td><td>'+mytime(dt)+'</td></tr>';
-        }
-        txt+='</tbody></table>'
-    }
-    return txt
-}
+//         txt='<h6>'+obj.jump+' had the first jump.</h6>'
+//         if(firstLead>1000){
+//             txt+='<p style="color:#FFAA00">'+obj.jump+' won by '+(firstLead/1000).toFixed(2)+'s.'
+//         }
+//         txt+='<table class="table table-striped" border=1 style="margin-top:20px">';
+//         txt+='<thead><tr><th>Quizzer</th><th>Timestamp</th></thead>';
+//         txt+='<tbody>'
+//         txt+=txtrows
+//         txt+='</tbody></table>'
+//     }
+//     return txt
+// }
 function pollBenches() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -68,7 +86,7 @@ function pollBenches() {
     var e=document.getElementById('quizid')
     var quizid=e.value;
 
-    var url='quiznet.php?d='+quizid+'&p=1&r=1';
+    var url='quiznet.php?id='+quizid+'&p=1';
     console.log(url)
     xhttp.open("GET", url, true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -79,17 +97,135 @@ function pollBenches() {
     //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     //xhttp.send("fname=Henry&lname=Ford");
 }
+function resetBenches() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        var obj=JSON.parse(this.responseText);
+        //if(txt.length<1){txt='no response';}
+        console.log(obj)
+        
+        //txt=benchMessage(obj)
+        document.getElementById("benchMessage").innerHTML = 'reset';
+    }
+    };
+    var e=document.getElementById('quizid')
+    var quizid=e.value;
 
+    var url='quiznet.php?id='+quizid+'&r=1';
+    console.log(url)
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send()
+}
+function qmTimeStamp() {
+    console.log('qmTimeStamp')
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var obj=JSON.parse(this.responseText);
+            console.log(obj)
+        }
+    };
+    var e=document.getElementById('quizid')
+    var quizid=e.value;
+    var qmt=(new Date()).getTime()+medianoffset;
+
+    var url='quiznet.php?id='+quizid+'&qmstamp='+qmt;
+    console.log(url)
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send()
+}
+function beepSeq(){
+    var b=document.getElementById("beepSeqStart")
+
+    if(beepSeqStatus){
+        var e=document.getElementById('beepSeqFile')
+        e.pause();
+        e.currentTime=0;
+        beepSeqStatus=false;
+        b.classList.add('btn-primary')
+        b.innerHTML='Start'
+    }
+    else{
+        document.getElementById('beepSeqFile').play();
+        beepSeqStatus=true;
+        b.classList.remove('btn-primary')
+        b.innerHTML='Stop'
+
+//         .classList.add('MyClass');
+
+// document.getElementById("MyElement").classList.remove('MyClass');
+
+// if ( document.getElementById("MyElement").classList.contains('MyClass') )
+
+    }
+}
+function beepMark(){
+    qmTimeStamp();
+    document.getElementById('play').play();
+}
+function startup(){
+    // set jumpzone to readonly until sampling done
+    var e=document.getElementById('status')
+    e.style.backgroundColor='#AAAAAA'
+    e.innerHTML='SYNCING...'
+
+    sampleRoundTrip(function(){
+            //console.log('done!');
+            console.log(offset)
+            console.log('median offset:'+medianoffset+'ms, median delay:'+mediandelay+'ms')
+            e.innerHTML='Offset: '+medianoffset+'ms';
+            e.style.backgroundColor='#FFFFFF';
+        })
+}
+
+
+var beepSeqStatus=false;
 </script>
 
 </head>
 <body>
+    <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+        <!-- Brand -->
+        <a class="navbar-brand" href="#">Quiznet - Quizmaster</a>
+      
+        <!-- Toggler/collapsibe Button -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <!-- Navbar links -->
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="https://github.com/tcubed/quiznet/blob/master/README.md" target="_blank">Quiznet documentation</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://vimeo.com/400944887" target="_blank">Overview video</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="mailto:trandom@gmail.com">Support email: trandom@gmail.com</a>
+            </li>
+            <!--
+            <li class="nav-item">
+              <a class="nav-link" href="#">Link</a>
+            </li>
+        -->
+          </ul>
+        </div>
+      </nav>
 
+
+
+
+<!--
     <div class="jumbotron text-center" style="margin-bottom:0">
         <h1>Quiznet Quiz</h1>
         <p>Quizmaster Page</p>
     </div>
-    
+    -->
     <div class="container-fluid">
         <div class="panel panel-primary">
             <div class="panel-heading">
@@ -106,10 +242,14 @@ function pollBenches() {
                 </div>
                 <div class="row" style="margin-top:20px">
                     <div class="col-1"></div>
-                    <div class="col-10" style="margin: auto 0">
+                    <div class="col-5" style="margin: auto 0">
                         <button class="btn btn-block btn-primary" id="poll" onclick="pollBenches();">Read Benches</button>
                     </div>
+                    <div class="col-5" style="margin: auto 0">
+                        <button class="btn btn-block btn-primary" id="resetBench" onclick="resetBenches();">RESET</button>
+                    </div>
                     <div class="col-1"></div>
+
                 </div>
                 <div class="row" style="margin-top:20px"></div>
                 <div class="row">
@@ -124,27 +264,99 @@ function pollBenches() {
         </div>
 
         <div class="row">
-            <div class="col-6">
-                <button class="btn btn-block btn-primary" id="timer5" onclick="mytimer(5);">5</button>
-            </div>
-            <div class="col-6">
-                <button class="btn btn-block btn-primary" id="timer30" onclick="mytimer(30);">30</button>
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-4">
+                                <button class="btn btn-block btn-primary" id="timer5" onclick="mytimer(5);">5</button>
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-block btn-primary" id="resetTimer" onclick="resetTimers();">RESET</button>
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-block btn-primary" id="timer30" onclick="mytimer(30);">30</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="text-center" id="divtimer">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+<!--
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="text-center" id="divtimer">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+-->
 
+
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-4"><h6>Audio Calibration</h6>
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-block btn-primary" id="beepSeqStart" onclick="beepSeq();">Start</button>
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-block btn-primary" id="beepMark" onclick="beepMark();">Mark</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <strong>STATUS:</strong><span id="status"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+    </div>
+    <!--
     <div class="jumbotron text-center" style="margin-bottom:0" id="divtimer">
     </div>
-    
+    -->
+
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <!--<a class="navbar-brand" href="#">Quiz on!</a>-->
+        <h6 style="font-size:x-small;color:#fff">Do not be anxious about anything, but in every situation, by prayer and petition,
+            with thanksgiving, present your requests to God. And the peace of God, which transcends 
+            all understanding, will guard your hearts and your minds in Christ Jesus. -- Phillipians 4:6-7</h6>
+    </nav>
+
     <audio id="play" src="assets/beep-07.wav"></audio>
+    <audio id="beepSeqFile" src="assets/beepIntro.mp3"></audio>
 
     <script>
         // Set the date we're counting down to
+        var MyTimer=[];
         function mytimer(delay){
             var countDownDate = new Date().getTime()+delay*1000;
             console.log('countdowndate:'+countDownDate)
             // Update the count down every 1 second
-            var x = setInterval(function() {
+            var idx=MyTimer.length;
+            
+            MyTimer[idx] = setInterval(function() {
                 // Get today's date and time
                 var now = new Date().getTime();
                 console.log('now:'+now)
@@ -158,19 +370,26 @@ function pollBenches() {
                 //var seconds = Math.floor((distance % (1000 * 60)) / 1000);
                 var seconds = Math.ceil(distance / 1000);
                 // Display the result in the element with id="demo"
-                document.getElementById("divtimer").innerHTML = seconds + "s ";
+                var divt=document.getElementById("divtimer")
+                divt.innerHTML = seconds + "s ";
                 
                 // If the count down is finished, write some text
                 if (distance < 0) {
-                    clearInterval(x);
+                    clearInterval(MyTimer[idx]);
                     document.getElementById("divtimer").innerHTML = "DONE";
                     document.getElementById('play').play();
                 }
             }, 1000);
         }
+        function resetTimers(){
+            for(var ii=0;ii<MyTimer.length;ii++){
+                clearInterval(MyTimer[ii]);
+            }
+            
+            document.getElementById("divtimer").innerHTML = "";
+        };
         
-        
-        
+        startup();
     </script>
 
 </body>

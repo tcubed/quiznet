@@ -26,7 +26,7 @@ function sampleRoundTrip(callback){
                 t2 = servertime,
                 t3 = (new Date()).valueOf();
             var c = ntp(t0, t1, t2, t3);
-
+            //console.log('NTP,t0:'+t0+', t1:'+t1+',t2:'+t2+',t3:'+t3)
             // log the calculated value rtt and time driff so we can manually verify if they make sense
             //console.log("NTP delay:", c.roundtripdelay, "NTP offset:", c.offset, "corrected: ", (new Date(t3 + c.offset)));
             
@@ -49,15 +49,51 @@ function mytime(dt){
     //console.log('mytime')
     //console.log(dt)
     //var txt=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()
+    var mnt=dt.getMinutes();
+    if(mnt<10){mnt='0'+mnt;}
     var sec=dt.getSeconds()
     if(sec<10){sec='0'+sec;}
     var msec=dt.getMilliseconds()
     if(msec<10){msec='0'+msec;}
     if(msec<100){msec='0'+msec;}
-    var txt=dt.getHours()+':'+dt.getMinutes()+':'+sec+'.'+msec;
+    var txt=dt.getHours()+':'+mnt+':'+sec+'.'+msec;
     //var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
     return txt
 }
+function benchMessage(obj){
+    if(obj.jump=="none"){
+        txt='<h6>No one has jumped yet.</h6>'
+    }
+    else{
+        // get times and names
+        var txtrows='';
+        var dtarr=[]
+        for(var ii=0;ii<obj.benches.length;ii+=1){
+            var res=obj.benches[ii].split(',');
+            var dt=new Date(Number(res[0]));
+            //console.log(dt)
+            txtrows+='<tr><td>'+res[1]+'</td><td>'+mytime(dt)+'</td></tr>';
+            dtarr.push(dt)
+        }
+        // determine how far ahead the first jumper was compared to the second
+        var firstLead=0;
+        if(dtarr.length>1){
+            firstLead=dtarr[1]-dtarr[0];
+        }
+
+        txt='<h6>'+obj.jump+' had the first jump.</h6>'
+        if(firstLead>1000){
+            txt+='<p style="color:#FFAA00">'+obj.jump+' won by '+(firstLead/1000).toFixed(2)+'s.'
+        }
+        txt+='<table class="table table-striped" border=1 style="margin-top:20px">';
+        txt+='<thead><tr><th>Quizzer</th><th>Timestamp</th></thead>';
+        txt+='<tbody>'
+        txt+=txtrows
+        txt+='</tbody></table>'
+    }
+    return txt
+}
+
 
 var delay=[], mediandelay;
 var offset=[], medianoffset;
