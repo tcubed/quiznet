@@ -30,20 +30,51 @@ function sampleRoundTrip(callback){
             // log the calculated value rtt and time driff so we can manually verify if they make sense
             //console.log("NTP delay:", c.roundtripdelay, "NTP offset:", c.offset, "corrected: ", (new Date(t3 + c.offset)));
             
-            delay.push(c.roundtripdelay)
-            offset.push(c.offset)
-            if(delay.length<20){
+            //networkDelay.push(c.roundtripdelay)
+            //networkOffset.push(c.offset)
+            networkDelay[iSample]=c.roundtripdelay
+            networkOffset[iSample]=c.offset
+            iSample++;
+
+            if(iSample%200==0){
+                console.log(iSample)
+            }
+
+            //if(networkDelay.length<NSAMPLE){
+            if(iSample<NSAMPLE){
                 sampleRoundTrip(callback);
             }
             else{
-                delay.sort()
-                offset.sort()
-                mediandelay=d3.median(delay)
-                medianoffset=d3.median(offset)
+                networkDelay.sort()
+                networkOffset.sort()
+                medianNetworkDelay=d3.median(networkDelay)
+                medianNetworkOffset=d3.median(networkOffset)
                 callback()
             }
         }
     });
+}
+function submitStats() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            txt= this.responseText
+            //if(txt.length<1){txt='no response';}
+            //document.getElementById("quizStatus").innerHTML = txt;
+        }
+    };
+    var e=document.getElementById('quizid')
+    var quizid=e.value;
+
+    var data={networkOffset:medianNetworkOffset,
+              networkDelay:medianNetworkDelay,
+              audioDelay:M.medianAudioDelay}
+    var payload=encodeURIComponent(JSON.stringify(data))
+    var url='quiznet.php?id='+quizid+'&stats';
+    //console.log(url)
+    xhttp.open("POST", url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send('data='+payload)
 }
 function mytime(dt){
     //console.log('mytime')
@@ -94,6 +125,9 @@ function benchMessage(obj){
     return txt
 }
 
-
-var delay=[], mediandelay;
-var offset=[], medianoffset;
+var iSample=0;
+var NSAMPLE=30;
+var networkDelay=new Array(NSAMPLE);
+var networkOffset=new Array(NSAMPLE);
+var medianNetworkDelay;
+var medianNetworkOffset;

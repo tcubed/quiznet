@@ -59,15 +59,101 @@ function logVisitors(){
     file_put_contents($fileday, $todayVizStr.PHP_EOL , FILE_APPEND | LOCK_EX);
     file_put_contents('logs.txt', $todayVizStr.PHP_EOL , FILE_APPEND | LOCK_EX);
 }
+function logStats(){
+    $now=new DateTime();
+    $today=$now->format('Y-m-d H:i:s');
+    $ip = $_SERVER["REMOTE_ADDR"];
+    $quizid=$_GET["id"];
+    $todayVizStr=$today.','.$ip.','.$quizid;
+    $arr=json_decode($_POST["data"],true);
+    $arr['datetime']=$today;
+    $arr['ip']=$ip;
+    $arr['quizid']=$quizid;
+    $data=json_encode($arr);
+    //echo $data;
+    file_put_contents('connectStats.txt', $data.PHP_EOL , FILE_APPEND | LOCK_EX);
+}
+function quizMasterTimeStamp($quizid){
+    // qm timestamp
+    $ts=$_GET["qmstamp"];
+    // quizmaster time-stamp file for quizid
+    $qmfile=sys_get_temp_dir().'/qm_'.$quizid.'.csv';
 
+    if($ts>0){
+        // if >0, this is the setting of the time-stamp
+        if(file_exists($qmfile)){
+            unlink($qmfile);
+        }
+        //$serverTimestamp = (new DateTime())->getTimestamp();
+        file_put_contents($qmfile,$ts);
+        echo '{"msg":"quizmaster timestamp logged"}';
+    }
+    else{
+        // if <=0, this is a polling of the quizmaster time-out
+        if(file_exists($qmfile)){
+            $dt=file_get_contents($qmfile);
+            echo '{"time":'.$dt.'}';
+        }
+        else{
+            echo '{"time":-1,"msg":"no file '.$qmfile.'"}';
+        }
+    }
+}
+function quizmasterReset($quizfile){
+    // function to either unlink (i.e reset) the quizid file
+    // or at the start of a question, where it will long-poll
+    // for a registered jump, where it will return that an 
+    // event has happened.
+    //
+    // $_GET['r']=1 --> reset
+    // $_GET['r']=2 --> reset & long-poll for jump
+
+    // quizmaster reset request
+    $reset=$_GET["r"];
+    if($reset=="1"){
+        if(file_exists($quizfile)){
+            unlink($quizfile);
+            echo '{"msg":"reset"}';
+            //echo 'quiz reset!';
+        }
+        else{
+            echo '{"msg":"'.$quizfile.' not found.  Ready to quiz!"}';
+            //echo "{'msg':'quiz ready!'}";
+        }
+    }
+    elseif($reset=="2"){
+        // QUIZMASTER "Question" Button
+        // long polling
+        if(file_exists($quizfile)){
+            unlink($quizfile);
+        }
+        usleep(5000);
+        $jump=0;
+        for($i=0;$i<500;$i++){
+            if(file_exists($quizfile)){
+                echo '{"msg":"beep"}';
+                $jump=1;
+                break;
+            }
+            //echo $i*50.'<br>';
+            // sleep 10ms
+            usleep(10000);
+        }
+        if($jump==0){
+            echo '{"msg":"no jump"}';
+        }
+    }
+}
 
 // get quizid
 $quizid=$_GET["id"];
 $quizid = preg_replace("/[^A-Za-z0-9]/", '', $quizid);
 
-//quizfile
+// quizfile
 $quizfile=sys_get_temp_dir().'/quiz'.$quizid.'.csv';
-$qmfile=sys_get_temp_dir().'/qm_'.$quizid.'.csv';
+
+// stats file
+
 //$quizpubfile=sys_get_temp_dir().'/quiz'.$quizid.'pub.csv';
 
 // jump requests
@@ -89,44 +175,24 @@ if(array_key_exists("p",$_GET)){
         echo '{"jump":"none"}';
     }
 }
+if(array_key_exists("stats",$_GET)){
+    // record stats
+    logStats();
+}
+
 if(array_key_exists("r",$_GET)){
-    // quizmaster reset request
-    $reset=$_GET["r"];
-    if($reset=="1"){
-        if(file_exists($quizfile)){
-            unlink($quizfile);
-            echo '{"msg":"reset"}';
-            //echo 'quiz reset!';
-        }
-        else{
-            echo '{"msg":"'.$quizfile.' not found.  Ready to quiz!"}';
-            //echo "{'msg':'quiz ready!'}";
-        }
-    }
+    // reset quizid file (jumps) or signal a jump
+    quizmasterReset($quizfile);
 }
 if(array_key_exists("qmstamp",$_GET)){
-    // qm timestamp
-    $ts=$_GET["qmstamp"];
-    if($ts>0){
-        if(file_exists($qmfile)){
-            unlink($qmfile);
-        }
-        //$serverTimestamp = (new DateTime())->getTimestamp();
-        file_put_contents($qmfile,$ts);
-        echo '{"msg":"quizmaster timestamp logged"}';
-    }
-    else{
-        if(file_exists($qmfile)){
-            $dt=file_get_contents($qmfile);
-            echo '{"time":'.$dt.'}';
-        }
-        else{
-            echo '{"time":-1,"msg":"no file '.$qmfile.'"}';
-        }
-    }
+    // set or poll the quizmaster timestamp
+    quizMasterTimeStamp($quizid);
 }
 //echo 'log visitors';
 logVisitors();
+
+
+
 //.date('Ymd');
 /*
 if(file_exists($qf)==FALSE){

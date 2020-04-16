@@ -74,12 +74,13 @@ function submitJump() {
     xhttp.send()
 }
 
+
 function jumpKeyPress(){
     //console.log('keypress')
     if(M.ready){
         // get time
         M.jumpTime = new Date();
-        M.jumpTime.setTime(M.jumpTime.getTime()+medianoffset-M.medianAudioDelay)
+        M.jumpTime.setTime(M.jumpTime.getTime()+medianNetworkOffset-M.medianAudioDelay)
 
         console.log('ready: jump at '+mytime(M.jumpTime))
         M.ready=false
@@ -106,7 +107,7 @@ function jumpButtonPress(){
     if(M.ready){
         // get time
         M.jumpTime = new Date();
-        M.jumpTime.setTime(M.jumpTime.getTime()+medianoffset-M.medianAudioDelay)
+        M.jumpTime.setTime(M.jumpTime.getTime()+medianNetworkOffset-M.medianAudioDelay)
 
         console.log('ready: jump at '+mytime(M.jumpTime))
         M.ready=false
@@ -288,7 +289,7 @@ function testJumpAudio(){
     //
     var dt0=new Date();
     var t0=dt0.getTime();
-    var t1=t0+medianoffset;
+    var t1=t0+medianNetworkOffset;
     var dt1=new Date(t1);
     console.log('==========\nMARK!')
     console.log('now (local clock): '+mytime(dt0))
@@ -378,6 +379,7 @@ function testJumpAudio(){
         ez.style.backgroundColor='#FFFFFF'
         ez.value='';
         ez.disabled=false;
+        submitStats();
     }
 }
 function resetJumpAudio(){
@@ -409,36 +411,7 @@ function pollBenches() {
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send()
 }
-function startup(){
-    // set jumpzone to readonly until sampling done
-    var ez=document.getElementById('jumpZone')
-    var ac=document.getElementById('audioCheck')
-    ez.style.backgroundColor='#AAAAAA'
-    ez.value='SYNCING...'
-    ez.disabled=true;
 
-    sampleRoundTrip(function(){
-            //console.log('done!');
-            console.log(offset)
-            console.log('median offset:'+medianoffset+'ms, median delay:'+mediandelay+'ms')
-            var e=document.getElementById('syncstats')
-            e.innerHTML='Offset: '+medianoffset.toFixed(0)+'ms, network delay: '+mediandelay.toFixed(0)+'ms';
-
-            //ez.style.backgroundColor='#FFFFFF'
-            /*
-            if(ac.checked==true){
-                ez.value='Ready for audio calibration';
-            }
-            else{
-                ez.value='';
-                ez.disabled=false
-                ez.style.backgroundColor='#FFF'
-            }
-            */
-            //ez.readonly=false;
-            changeAudioCheck();
-        })
-}
 function changeAudioCheck(){
     var e=document.getElementById('audioCheck');
     var eam=document.getElementById('audioMark');
@@ -498,6 +471,42 @@ function changeAudioCheck(){
 
         M.medianAudioDelay=0;
     }
+}
+function startup(){
+    // set jumpzone to readonly until sampling done
+    var ez=document.getElementById('jumpZone')
+    var ac=document.getElementById('audioCheck')
+    ez.style.backgroundColor='#AAAAAA'
+    ez.value='SYNCING...'
+    ez.disabled=true;
+
+    sampleRoundTrip(function(){
+            //console.log('done!');
+            console.log(networkOffset)
+            console.log('median offset:'+medianNetworkOffset+'ms, median delay:'+medianNetworkDelay+'ms')
+            var e=document.getElementById('syncstats')
+            e.innerHTML='Offset: '+medianNetworkOffset.toFixed(0)+'ms, network delay: '+medianNetworkDelay.toFixed(0)+'ms';
+
+            submitStats();
+            //ez.style.backgroundColor='#FFFFFF'
+            /*
+            if(ac.checked==true){
+                ez.value='Ready for audio calibration';
+            }
+            else{
+                ez.value='';
+                ez.disabled=false
+                ez.style.backgroundColor='#FFF'
+            }
+            */
+            //ez.readonly=false;
+            changeAudioCheck();
+
+            //
+            // show delay chart
+            //
+            //plotDelay(delay)
+        })
 }
 // setup
 var M={ready:true,
@@ -757,7 +766,9 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
     <p>Intended for C&amp;MA Bible Quizzing.</p>
 </div>
 -->
+<div id="mygraph">
 
+</div>
 
 
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark d-fixed-bottom-sm">
@@ -792,6 +803,96 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
 
 
 </script>
+
+<script>
+    // set the dimensions and margins of the graph
+    var margin = {top: 10, right: 20, bottom: 30, left: 50},
+         width = 200 - margin.left - margin.right,
+         height = 100 - margin.top - margin.bottom;
+
+    // set the ranges
+    //var x = d3.scaleTime().range([0, width]);
+    var x = d3.scaleLinear().range([0, width]);
+    var y = d3.scaleLinear().range([height, 0]);
+
+    // define the line
+    var valueline = d3.line()
+        .x(function(d) { return x(d.idx); })
+        .y(function(d) { return y(d.delay); });
+
+    // append the svg obgect to the body of the page
+    // appends a 'group' element to 'svg'
+    // moves the 'group' element to the top left margin
+    var svg = d3.select("#mygraph").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g").attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    function plotDelay(delayData){
+         console.log('plotDelay')
+         console.log(delayData)
+         // Get the data
+         //d3.csv("data.csv", function(error, data) {
+         //  if (error) throw error;
+            // format the data
+            var data=[]
+
+            delayData.forEach(function(d,idx) {
+               //d.idx = d.idx;
+               //d.delay = +d.delay;
+               data.push({"idx":+idx,"delay":+d})
+            });
+            console.log(data)
+
+            // Scale the range of the data
+            x.domain([0,d3.max(data, function(d) { return d.idx; })]);
+            y.domain([0, d3.max(data, function(d) { return d.delay; })]);
+
+            // Add the valueline path.
+            svg.append("path")
+               .data([data])
+               .attr("fill","none")
+               .attr("stroke", "steelblue")
+               .attr("stroke-width", 1.5)
+               .attr("class", "line")
+               .attr("d", valueline);
+
+            // Add the X Axis
+            svg.append("g")
+               .attr("transform", "translate(0," + height + ")")
+               .call(d3.axisBottom(x));
+
+            // text label for the x axis
+            svg.append("text")             
+                .attr("transform",
+                        "translate(" + (width/2) + " ," + 
+                                    (height + margin.top + 20) + ")")
+                .style("text-anchor", "middle")
+                .style("font-size", ".7em")
+                .text("Sample");
+
+            // Add the Y Axis
+            svg.append("g")
+               .call(d3.axisLeft(y));
+
+            // text label for the y axis
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x",0 - (height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .style("font-size", ".7em")
+                .text("Network Delay"); 
+         //});
+    }
+
+
+
+</script>
+
+
 
 </body>
 </html>
