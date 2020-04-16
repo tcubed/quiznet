@@ -10,7 +10,7 @@ The purpose of this package is to allow bible quizzers to practice and quiz with
  - Teams or multiple teams attend a joint audio teleconference.
  - Each participant and quiz master joins a quizzing event using a unique quiz ID.
  - Quizzers "jump" by pressing a designated key (up to 4 quizzers per laptop or 1 on a mobile device), 
-   which time stamps the jump and plays a beep, letting the quiz master know to stop reading the question.
+   which time stamps the jump.  The quizmaster will hear a beep and stop reading the question.
  - The quizmaster page lets them see who had the first jump.  They announce who got the jump, and proceed 
    as normal over the teleconference.
    
@@ -21,12 +21,10 @@ The Quiznet system was designed to work with variable-speed networks.  That is, 
 There are three critical pieces to make this work:
 
  1. All the clocks have to be synced so the time-stamps can be properly compared.
- 2. We need an estimate of the audio lag each user experiences due to the conference call.
- 3. A mechanism to relay to the quizmaster when a jump has occurred so they can halt reading the question.
- 
- The time syncing is done through estimating the offset between quizzers and quizmaster and the server using the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) algorithm.  The audio lag is estimated through an audio calibration to measure the delay the quizzers are experiencing.  Both of these are handled in Quiznet.
- 
-Lastly, regarding signaling the quizmaster, and there are several options.  If they are using Zoom or the like, a clever use of the chat function (and video?) may be the best option.  The application will "beep", but sadly this won't work if the quizzer is on a headset and has been found to not work reliably across all devices.  As a last resort, the quizzer can call out, but this has problems, too.  All of these will lead to some "bleeding" of the question, but that is probably a reality of the situation.
+ 2. The quizmaster has to know when a jump has occurred so they can halt reading the question.
+ 3. We need an estimate of the audio lag each user experiences due to the conference call.
+
+ The time syncing is done through estimating the offset between quizzers and quizmaster and the server using the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) algorithm.  When a quizzer jumps, their jump is recorded, the quizmaster will hear a beep.  Lastly, we know teleconference solutions experience some degree of audio lag.  The audio lag is estimated through an audio calibration to measure the delay the quizzers are experiencing.  All three of these pieces are handled in Quiznet.
 
 Desktop View | Mobile View | Quizmaster (Mobile)
 ------------ | ----------- | -------------------
@@ -40,8 +38,7 @@ The quizmaster/coach should send out teleconference details and a unique quiz ID
 I would highly recommend reviewing Pacific Northwest's excellent [Virtual Quizzing](https://pnwquizzing.org/references_for_quizzing/virtual_quizzing.md) page for some best practices.
 
 ### Setup
-   - Turn the volume on your computer/device to the max so the quizmaster can hear it over the teleconference.
-   - Quizzers, refresh the page a few times until you get a consistent reading in the SYNC portion of the window.
+   - Quizzers and Quizmaster should refresh the page a few times until you get a consistent reading in the SYNC portion of the window.
    - We highly recommend quizzers and quizmaster use a personal computer for the best experience:
      - Enter the names and convenient jump keys for up to 4 quizzers.  For example, the keys "a","v","m","p"
        are somewhat spaced out to allow 4 quizzers around the same laptop.
@@ -60,9 +57,8 @@ I would highly recommend reviewing Pacific Northwest's excellent [Virtual Quizzi
    - For both: after you jump, the timestamp is shown after Device.  When you see "jump logged" after Server, you know your
      jump was recorded at the server.
 ### Quizmasters
- - Read the question as normal, when you hear a beep over the teleconference; stop!
- - Press "Read Benches" to poll the server for the winner of the jump.  Only one jump per device is registered.
- - You can, if necessary, repeat the "Read Benches" to clear the log.
+ - Read the question as normal, pressing the "Question" button at the normal time.  When you hear a beep; stop!
+ - After a slight delay, the page will show the winner of the jump.  Only one jump per device is registered.  If desired you can press "Read Benches" to reread jumps from the server.
  - Routinely, quizmasters cue quizzers to jump to test their bench.  A similar process can be used here:
    - Call out their name
    - They jump
@@ -93,7 +89,7 @@ touch screen is (which is out of my control), but I welcome any findings in this
 
 #### The beep is delayed.  Does that mean my jump was recorded late?
 This is a Known Issue (see above).  Rest assured, the page timestamps the jump as soon as a key is pressed.  The playing of the beep happens after that, and is dependent on the sound file and how it is played in the browser.  Our testing indicates the beep does lag the
-timestamp.
+timestamp -- most notably on iPhones, and we suspect iOS using Safari.
 
 #### Does it matter what web browser I use?
 The application has been tested on Chrome, FireFox, and Edge on a Windows 10 machine, as well as Safari on iPhone.  We recommend using a personal computer for the best experience over a mobile device or tablet.  If you have issues, please let us know along with the device and browser you were using.
@@ -104,7 +100,7 @@ will put a synchronized timestamp on your jump.  Quizzer jumps are sent to the s
 compared, so any network lags should play a minimal role in determining who got the first jump.
 
 #### What is "audio calibration"?
-Anecdotally, we tested a Zoom call on two laptops in within the same room, with internet-audio and no video (the best internet call I could manage), and we measured up to a 1.6s delay!  Quiznet audio calibration measures this delay and applies an additional offset to the time-stamp.  For technical details, see the answer below.
+Zoom is a common video/audio conferencing solution.  The company shoots for no more than a 150ms delay, but sometimes (especially on the free plan) calls can get routed to remote servers causing significant delay.  Anecdotally, we tested a Zoom call on two laptops in within the same room, with internet-audio and no video (the best internet call I could manage), and we measured up to a 1.6s delay!  Quiznet audio calibration measures this delay and applies an additional offset to the time-stamp.  For technical details, see the answer below.
 
 ### Quizmasters
 #### How come I don't see all the quizzers who jumped?
