@@ -84,6 +84,10 @@ function jumpKeyPress(){
 
         console.log('ready: jump at '+mytime(M.jumpTime))
         M.ready=false
+
+        
+        
+
         //
         // play sound
         //
@@ -116,6 +120,13 @@ function jumpButtonPress(){
         // play a sound
         //
         snd1.play()
+
+        ejb=document.getElementById('jumpButton')
+        ejr=document.getElementById('jumpReset')
+        if(ejb.classList.contains('btn-primary')){
+            ejb.classList.remove('btn-primary')
+            ejr.classList.add('btn-primary')
+        }
 
         if(M.readJump==false){
             e=document.getElementById('usr1')
@@ -194,6 +205,21 @@ function reset(){
     ez=document.getElementById('jumpZone')
     ez.style.backgroundColor='#FFFFFF'
     ez.value=''
+
+    // reset message
+    document.getElementById("benchMessage").innerHTML = '';
+
+    ejb=document.getElementById('jumpButton')
+    ejr=document.getElementById('jumpReset')
+    if(ejr.classList.contains('btn-primary')){
+        ejr.classList.remove('btn-primary')
+        ejb.classList.add('btn-primary')
+        ejb.disabled=false
+    }
+    //else{
+    //    ejb.disabled=true
+    //}
+
 }
 function testJump(){
 
@@ -467,7 +493,7 @@ function changeAudioCheck(){
         ejb.disabled=false
         ejb.classList.add('btn-primary');
         ejr.disabled=false
-        ejr.classList.add('btn-primary');
+        //ejr.classList.add('btn-primary');
 
         M.medianAudioDelay=0;
     }
@@ -692,7 +718,7 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
                                 <button class="btn btn-primary" id="jumpButton" onclick="jumpButtonPress();">Jump</button>
                             </div>
                             <div class="col-6 text-center">
-                                <button class="btn btn-primary" id="jumpReset" onclick="reset();">Reset</button>
+                                <button class="btn" id="jumpReset" onclick="reset();">Reset</button>
                             </div>
                         </div>
                     </div>

@@ -74,6 +74,8 @@ function mytime(dt){
 function question() {
     var eb=document.getElementById('question')
     
+    document.getElementById("benchMessage").innerHTML = 'Ready for jumps...';
+
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -82,9 +84,12 @@ function question() {
         if(eb.classList.contains('btn-primary')==false){eb.classList.add('btn-primary')}
         if(eb.classList.contains('btn-warning')){eb.classList.remove('btn-warning')}
 
-        snd1.play()
         if(obj.msg=="no jump"){
             document.getElementById("benchMessage").innerHTML = 'No one jumped.';
+        }
+        else{
+            console.log(obj.msg)
+            snd1.play()
         }
         //txt=benchMessage(obj.msg)
         //document.getElementById("benchMessage").innerHTML = txt;
@@ -284,13 +289,15 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
 
                 </div>
                 <div class="row" style="margin-top:20px">
+                    <div class="col-2"></div>
                     <div class="col-4" style="margin: auto 0">
                         <button class="btn btn-block btn-primary" id="question" onclick="question();">Question</button>
                     </div>
-                    
+                    <!--
                     <div class="col-4" style="margin: auto 0">
                         <button class="btn btn-block btn-primary" id="resetBench" onclick="resetBenches();">RESET</button>
                     </div>
+                    -->
                     <div class="col-4" style="margin: auto 0">
                         <button class="btn btn-block" id="poll" onclick="pollBenches();">Read Benches</button>
                     </div>
