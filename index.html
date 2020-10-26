@@ -7,12 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="quiznet.js"></script>
+    <script src="scores.js"></script>
 
     <style>
     .fakeimg {
@@ -62,6 +64,7 @@ function submitJump() {
         document.getElementById("quizStatus").innerHTML = txt;
 
         setTimeout(pollBenches,2000);
+        setTimeout(reset,2000);
     }
     };
     var e=document.getElementById('quizid')
@@ -122,10 +125,10 @@ function jumpButtonPress(){
         snd1.play()
 
         ejb=document.getElementById('jumpButton')
-        ejr=document.getElementById('jumpReset')
+        //ejr=document.getElementById('jumpReset')
         if(ejb.classList.contains('btn-primary')){
             ejb.classList.remove('btn-primary')
-            ejr.classList.add('btn-primary')
+            //ejr.classList.add('btn-primary')
         }
 
         if(M.readJump==false){
@@ -210,9 +213,9 @@ function reset(){
     document.getElementById("benchMessage").innerHTML = '';
 
     ejb=document.getElementById('jumpButton')
-    ejr=document.getElementById('jumpReset')
-    if(ejr.classList.contains('btn-primary')){
-        ejr.classList.remove('btn-primary')
+    //ejr=document.getElementById('jumpReset')
+    if(ejb.classList.contains('btn-primary')==false){
+        //ejr.classList.remove('btn-primary')
         ejb.classList.add('btn-primary')
         ejb.disabled=false
     }
@@ -419,6 +422,7 @@ function resetJumpAudio(){
     var edm=document.getElementById('devmsg')
     edm.innerHTML='';
 }
+/*
 function pollBenches() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -437,6 +441,7 @@ function pollBenches() {
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send()
 }
+*/
 
 function changeAudioCheck(){
     var e=document.getElementById('audioCheck');
@@ -444,7 +449,7 @@ function changeAudioCheck(){
     var ear=document.getElementById('audioReset');
     var ejz=document.getElementById('jumpZone');
     var ejb=document.getElementById('jumpButton');
-    var ejr=document.getElementById('jumpReset');
+    //var ejr=document.getElementById('jumpReset');
 
     var edm=document.getElementById('devmsg')
     edm.innerHTML='';
@@ -466,8 +471,8 @@ function changeAudioCheck(){
 
         ejb.disabled=true
         ejb.classList.remove('btn-primary');
-        ejr.disabled=true
-        ejr.classList.remove('btn-primary');
+        //ejr.disabled=true
+        //ejr.classList.remove('btn-primary');
     }
     else{
         //
@@ -492,19 +497,38 @@ function changeAudioCheck(){
 
         ejb.disabled=false
         ejb.classList.add('btn-primary');
-        ejr.disabled=false
+        //ejr.disabled=false
         //ejr.classList.add('btn-primary');
 
         M.medianAudioDelay=0;
     }
 }
+function checkDev(){
+    if (window.location.href.indexOf('/dev/')>-1){
+        console.log('dev!')
+        var e=document.getElementById('navbar');
+        if(e.classList.contains('bg-dark')){
+            e.classList.remove('bg-dark');
+            e.classList.add('bg-warning')
+        }
+        e=document.getElementById('brand');
+        e.innerHTML='Quiznet DEV (back to <a href="..">Quiznet</a>)'
+    }
+}
 function startup(){
+    // check if development version
+    checkDev();
+    // get scores
+    getScores();
+
     // set jumpzone to readonly until sampling done
-    var ez=document.getElementById('jumpZone')
-    var ac=document.getElementById('audioCheck')
-    ez.style.backgroundColor='#AAAAAA'
-    ez.value='SYNCING...'
-    ez.disabled=true;
+    var ejz=document.getElementById('jumpZone')
+    var ejb=document.getElementById('jumpButton');
+    //var ac=document.getElementById('audioCheck')
+    ejz.style.backgroundColor='#AAAAAA'
+    ejz.value='SYNCING...'
+    ejz.disabled=true;
+    ejb.disabled=true;
 
     sampleRoundTrip(function(){
             //console.log('done!');
@@ -526,7 +550,16 @@ function startup(){
             }
             */
             //ez.readonly=false;
-            changeAudioCheck();
+            //changeAudioCheck();
+
+            //
+            // re-enable the jumpzone and jumpbutton
+            //
+            ejz.value='';
+            ejz.style.backgroundColor='#FFF'
+            ejz.disabled=false
+            ejb.disabled=false
+            //ejb.classList.add('btn-primary');
 
             //
             // show delay chart
@@ -534,6 +567,7 @@ function startup(){
             //plotDelay(delay)
         })
 }
+
 // setup
 var M={ready:true,
        readJump:false,
@@ -548,9 +582,9 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
 </head>
 <body>
 
-    <nav class="navbar bg-dark navbar-dark">
+    <nav id="navbar" class="navbar bg-dark navbar-dark">
         <!-- Brand -->
-        <a class="navbar-brand" href="#">Quiznet</a>
+        <a id="brand" class="navbar-brand" href="#">Quiznet</a>
         <!--
         <ul class="navbar-nav">
             <li class="nav-item">
@@ -559,6 +593,25 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
             
         </ul>
 -->
+    <ul class="nav">
+        <li class="nav-item">
+            <div class="btn-group largeDisplay">
+                <button type="button" class="btn btn-primary" id="team1lg">Team1: 20</button>
+                <button type="button" class="btn btn-light" id="team2lg">Team2: 20</button>
+                <button type="button" class="btn btn-danger" id="team3lg">Team3: 20</button>
+            </div>
+        </li>
+        <li class="nav-item">
+            <div class="btn-group largeDisplay" style="margin-left:10px">
+                <button type="button" class="btn btn-light" onclick="getScores()">
+                    <!--<i class="fa fa-refresh" style="font-size:24px;"></i>-->
+                    <i class="material-icons" style="font-size:16px">refresh</i>
+                </button>
+            </div>
+        </li>
+    </ul>
+
+
         <!-- Toggler/collapsibe Button -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
           <span class="navbar-toggler-icon"></span>
@@ -575,7 +628,7 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="mailto:trandom@gmail.com">Support email: trandom@gmail.com</a>
+                <a class="nav-link" href="mailto:t3random@gmail.com">Support email: t3random@gmail.com</a>
             </li>
             <li class="nav-item">
                 <p>What's new?</p>
@@ -625,6 +678,24 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
                     </label>
                     <input type="text" class="form-control-sm" id="quizid" value="myquiz">
                 </div>
+<!--style="display:flex; justify-content"-->
+<div class="row smallDisplay">
+    <div class="col-12">
+        <div class="btn-group  w-90 mx-auto">
+
+            <button type="button" class="btn btn-primary btn-sm" id="team1sm">Team1: 20</button>
+            <button type="button" class="btn btn-light btn-sm" id="team2sm">Team2: 20</button>
+            <button type="button" class="btn btn-danger btn-sm" id="team3sm">Team3: 20</button>
+        </div>
+        <div class="btn-group w-90 mx-auto"></div>
+            <button type="button" class="btn btn-light btn-sm" onclick="getScores()">
+                <i class="material-icons" style="font-size:16px">refresh</i>
+            </button>
+        </div>
+    </div>
+</div>
+                
+
             </div>
         </div>
     </div>
@@ -707,6 +778,10 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
                             </textarea>
                         </div>
                     </div>
+                    <div class="card-footer text-center">
+                        <button class="btn btn-block" onclick="pollBenches();">Read Benches</button>
+                    </div>
+
                 </div>
             </div>
 
@@ -718,7 +793,8 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
                                 <button class="btn btn-primary" id="jumpButton" onclick="jumpButtonPress();">Jump</button>
                             </div>
                             <div class="col-6 text-center">
-                                <button class="btn" id="jumpReset" onclick="reset();">Reset</button>
+                                <!--<button class="btn" id="jumpReset" onclick="reset();">Reset</button>-->
+                                <button class="btn btn-block" id="poll" onclick="pollBenches();">Read Benches</button>
                             </div>
                         </div>
                     </div>
@@ -734,7 +810,17 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
 
     <div class="row">
         <div class="col">
-
+             <!--
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="col-4"></div>
+                    <div class="col-4">
+                        <button class="btn btn-block" onclick="pollBenches();">Read Benches</button>
+                    </div>
+                    <div class="col-4"></div>
+                </div>
+            </div>
+           
             <div class="card">
                 <div class="card-body text-center">
                     <div class="row">
@@ -751,14 +837,12 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
                         <div class="col-3">
                             <button class="btn" onclick="resetJumpAudio();" disabled=true id="audioReset">Reset</button>
                         </div>
-                        <!--
-                        <div class="col-3" id="seqdiv">
-                        </div>
-                        -->
+                        
                     </div>
                     
                 </div>
             </div>
+            -->
 
             <div class="card small">
                 <div class="card-body">

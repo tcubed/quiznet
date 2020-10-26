@@ -13,6 +13,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="quiznet.js"></script>
+    <script src="scores.js"></script>
 
     <style>
     .fakeimg {
@@ -233,6 +234,18 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
 
 </script>
 
+<script language="javascript">
+    
+    var password; 
+    var pass1="cmaquiz"; 
+    password=prompt('Enter Password (contact t3random@gmail.com for access)',' '); 
+    if (password==pass1) 
+    alert('Correct Password! Quiz on!'); 
+    else { window.location="https://trueword.freehostia.com/quiznet/qm.html"; 
+    } 
+    
+</script>
+
 </head>
 <body>
     <nav class="navbar navbar-expand-md bg-dark navbar-dark">
@@ -254,7 +267,7 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
               <a class="nav-link" href="https://vimeo.com/400944887" target="_blank">Overview video</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="mailto:trandom@gmail.com">Support email: trandom@gmail.com</a>
+                <a class="nav-link" href="mailto:t3random@gmail.com">Support email: t3random@gmail.com</a>
             </li>
             <!--
             <li class="nav-item">
@@ -317,16 +330,107 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-4">
+                            <div class="col-3">
                                 <button class="btn btn-block btn-primary" id="timer5" onclick="mytimer(5);">5</button>
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <button class="btn btn-block btn-primary" id="resetTimer" onclick="resetTimers();">RESET</button>
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <button class="btn btn-block btn-primary" id="timer30" onclick="mytimer(30);">30</button>
                             </div>
+                            <div class="col-3">
+                                <div class="text-center" id="divtimer">
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                    <!--
+                    <div class="card-footer">
+                        <div class="text-center" id="divtimer">
+                        </div>
+                    </div>
+                    -->
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <!--
+                    <div class="card-header" style="padding:5px 20px">
+                        <h6>Teams</h6>
+                    </div>
+                    -->
+                    <div class="card-body" style="padding:0">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="row" style="background-color:#F00">
+                                        <div class="col-8" style="margin:auto">
+                                            <label for="teamName1" style="margin-bottom:1px;color:#fff"><small>Team 1</small></label>
+                                            <div class="input-group-sm" style="margin:1px">
+                                                <input type="text" class="form-control" id="teamName1" name="email" onchange="submitScores(1,0)">
+                                            </div>
+                                        
+                                            <div class="btn-group smallDisplay" style="padding:5px">
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="submitScores(1,10)"><small>+10</small></button>
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="submitScores(1,-10)"><small>-10</small></button>
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="submitScores(1,20)"><small>Reset</small></button>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 text-center" style="margin:auto">
+                                            <h1><span id="teamScore1">20</span></h1>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-4">
+
+                                    <div class="row" style="background-color:#BBB">
+                                        <div class="col-8" style="margin:auto">
+                                            <label for="teamName1" style="margin-bottom:1px"><small>Team 2</small></label>
+                                            <div class="input-group-sm" style="margin:1px">
+                                                <input type="text" class="form-control" id="teamName2" name="email" onchange="submitScores(2,0)">
+                                            </div>
+                                        
+                                            <div class="btn-group smallDisplay" style="padding:5px">
+                                                <button type="button" class="btn btn-light btn-sm" onclick="submitScores(2,10)"><small>+10</small></button>
+                                                <button type="button" class="btn btn-light btn-sm" onclick="submitScores(2,-10)"><small>-10</small></button>
+                                                <button type="button" class="btn btn-light btn-sm" onclick="submitScores(2,20)"><small>Reset</small></button>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 text-center" style="margin:auto">
+                                            <h1><span id="teamScore2">20</span></h1>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-4">
+                                    <div class="row" style="background-color:#55F">
+                                        <div class="col-8" style="margin:auto">
+                                            <label for="teamName1" style="margin-bottom:1px;color:#fff"><small>Team 3</small></label>
+                                            <div class="input-group-sm" style="margin:1px">
+                                                <input type="text" class="form-control" id="teamName3" name="email" onchange="submitScores(3,0)">
+                                            </div>
+                                        
+                                            <div class="btn-group smallDisplay" style="padding:5px">
+                                                <button type="button" class="btn btn-primary btn-sm" onclick="submitScores(3,10)"><small>+10</small></button>
+                                                <button type="button" class="btn btn-primary btn-sm" onclick="submitScores(3,-10)"><small>-10</small></button>
+                                                <button type="button" class="btn btn-primary btn-sm" onclick="submitScores(3,20)"><small>Reset</small></button>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 text-center" style="margin:auto">
+                                            <h1><span id="teamScore3">20</span></h1>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
 
                     <div class="card-footer">
@@ -336,6 +440,7 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
                 </div>
             </div>
         </div>
+
 <!--
         <div class="row">
             <div class="col">
@@ -349,7 +454,7 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
         </div>
 -->
 
-
+<!--
         <div class="row">
             <div class="col">
                 <div class="card">
@@ -368,6 +473,7 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
                 </div>
             </div>
         </div>
+-->
 
         <div class="row">
             <div class="col">

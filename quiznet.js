@@ -125,6 +125,25 @@ function benchMessage(obj){
     return txt
 }
 
+function pollBenches() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        var obj=JSON.parse(this.responseText);
+        txt=benchMessage(obj)
+        document.getElementById("benchMessage").innerHTML = txt;
+    }
+    };
+    var e=document.getElementById('quizid')
+    var quizid=e.value;
+
+    var url='quiznet.php?id='+quizid+'&p=1';
+    console.log(url)
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send()
+}
+
 var iSample=0;
 var NSAMPLE=30;
 var networkDelay=new Array(NSAMPLE);
