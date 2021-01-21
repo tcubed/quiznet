@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>QuizNet</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="quiznet.js"></script>
+    <script src="scores.js"></script>
+
+    <style>
+        /*
+    * {
+        font-size: 0.9rem
+    }
+    */
+    .fakeimg {
+      height: 200px;
+      background: #aaa;
+    }
+    .jumbotron {padding: 0.5rem}
+    input{ text-align:center}
+
+    .card-body{padding:0.5rem;}
+    .label{margin-bottom:0.1rem;}
+    .form-group{margin-bottom:0.25rem;}
+    
+    .table td, .table th{padding: 0.1rem;text-align:center}
+
+    /* If the screen size is 600px wide or less, hide the element */
+    @media screen and (max-width: 768px) {
+        div.largeDisplay {
+            display: none;
+        }
+    }
+    @media screen and (min-width: 769px) {
+        div.smallDisplay {
+            display: none;
+        }
+    }
+    ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 7px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, .5);
+    box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+    }
+    </style>
+    <!--#benchMessage table,td,th{padding:0.2rem;}-->
+<script>
+
+function getQuizData(quizid){
+    // get the quiz scores for this quiz-id
+    console.log('get data for '+quizid)
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            // try to parse response
+            var J;
+            try{
+                J=JSON.parse(this.responseText);
+            }
+            catch{
+                console.log('non-JSON response:"'+this.responseText+'"');
+            }
+            //console.log('response:"'+this.responseText+'"');
+            //if(J!=undefined){
+             //   setTeamScores(quizid,J);
+            //}
+            setQuizData(quizid,J);
+            setMessage('')
+        }
+    };
+    xmlhttp.open("POST", "quiznet.php", true);
+    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xmlhttp.send('id='+quizid+'&getScore='+quizid);
+}
+function setQuizData(quizid,quizData){
+    // set the team score HTML DOM elements for a particular quizid
+    // -- this assumes they exist in the DOM as <quizid>1,<quizid>2,<quizid>3
+    var e;
+    if(quizData==undefined){
+        console.log('what quizData?')
+        for (var ii=0;ii<3;ii++){
+            var id=quizid+(Number(ii)+1);
+            var e=document.getElementById(id)
+            e.innerText='Not set up.'
+        }
+    }
+    else{
+        // valid quizData object
+        console.log('quizData!')
+        // set quiz and question
+        e=document.getElementById(quizid+'QZ')
+        e.innerText='Quiz: '+quizData.quiz+' | '
+        e=document.getElementById(quizid+'Q')
+        e.innerText='Question: '+quizData.question
+
+        // set scores
+        for (var ii=0;ii<quizData.scores.length;ii++){
+            var id=quizid+(Number(ii)+1);
+            var score=quizData.scores[ii]
+            var e=document.getElementById(id)
+            e.innerText=score.team+':'+score.score
+        }
+    }
+}
+
+function createQuizCards(){
+    // get quizids
+    var quizids=quizIdList();
+
+    var e=document.getElementById('quizCards')
+    // remove old cards
+    var ncards=e.childElementCount
+    for(var ii=0;ii<ncards;ii++){
+        var ec=e.children[0]
+        e.removeChild(ec)
+    }
+
+    // add new cards
+    for(var qi=0;qi<quizids.length;qi++){
+        var qc=createQuizCard(quizids[qi])
+        e.appendChild(qc)
+    }
+
+    updateScoreTable();
+}
+
+function createQuizCard(quizid){
+    // Your existing code unmodified...
+    var col=['#F99','#EEE','#99F']
+
+    var cdiv = document.createElement('div');
+    cdiv.id = quizid;
+    cdiv.className = 'card';
+    cdiv.classList.add('text-center')
+
+    // card-header
+    var chdr = document.createElement('div');
+    chdr.className='card-header';
+    chdr.style='padding-bottom:2px;padding-top:2px'
+    var h5 = document.createElement('h5');
+    h5.innerText=quizid;
+    h5.style='margin-bottom:2px'
+    chdr.appendChild(h5)
+
+    var p = document.createElement('p')
+    p.style='margin-bottom:2px'
+    var sp = document.createElement('span')
+    sp.id=quizid+'QZ'
+    sp.innerText='Quiz: ? |'
+    p.appendChild(sp)
+    var sp = document.createElement('span')
+    sp.id=quizid+'Q'
+    sp.innerText='Question: ?'
+    p.appendChild(sp)
+    chdr.appendChild(p)
+
+
+
+    cdiv.appendChild(chdr)
+
+    // card-body
+    var cbdy = document.createElement('div');
+    cbdy.className='card-body';
+
+    var tb = document.createElement('table')
+    tb.style='width:100%'
+    // append row of quiz and question
+    /*
+    var tr = document.createElement('tr')
+    var td = document.createElement('td')
+    var sp = document.createElement('span')
+    sp.id=quizid+'QZ'
+    sp.innerText='QZ:?'
+    td.appendChild(sp)
+    var sp = document.createElement('span')
+    sp.id=quizid+'Q'
+    sp.innerText='Q:?'
+    td.appendChild(sp)
+    tr.appendChild(td)
+    tb.appendChild(tr)
+    */
+    
+    for(var ii=0;ii<3;ii++){
+        var tr = document.createElement('tr')
+        var td = document.createElement('td')
+        td.style='background-color:'+col[ii]
+        var sp = document.createElement('span')
+        sp.id=quizid+(ii+1)
+        sp.innerText='team '+(ii+1)
+        td.appendChild(sp)
+        tr.appendChild(td)
+        tb.appendChild(tr)
+    }
+    cbdy.appendChild(tb)
+
+    cdiv.appendChild(cbdy)
+    return cdiv
+}
+
+function quizIdList(){
+    // turn quizids input into a trimmed list of strings
+    var quizids=document.getElementById('quizids').value.split(',')
+    for(var ii=0;ii<quizids.length;ii++){
+        quizids[ii]=quizids[ii].trim()
+    }
+    return quizids
+}
+
+function updateScoreTable(){
+    setMessage('updating')
+    // get quizids
+    var quizids=quizIdList();
+    for(var qi=0;qi<quizids.length;qi++){
+        // create HTML DOM elements
+        var thisquizid=quizids[qi]
+        // get scores
+        getQuizData(thisquizid)
+    }
+}
+function update(){
+    // check if the score table is ready...
+    var quizids=quizIdList();
+    var teamid=quizids[0]+'1'
+    e=document.getElementById(teamid)
+    if(e==undefined){
+        //console.log(teamid + ' doesnt exist yet')
+    }
+    else{
+        //console.log('updating scores!')
+        updateScoreTable();
+    }
+}
+
+function setMessage(t){
+    var e=document.getElementById('devmsg')
+    e.innerHTML=t
+    //e.value=t
+}
+
+function checkDev(){
+    if (window.location.href.indexOf('/dev/')>-1){
+        console.log('dev!')
+        var e=document.getElementById('navbar');
+        if(e.classList.contains('bg-dark')){
+            e.classList.remove('bg-dark');
+            e.classList.add('bg-warning')
+        }
+        e=document.getElementById('brand');
+        e.innerHTML='Quiznet DEV (back to <a href="..">Quiznet</a>)'
+    }
+}
+function startup(){
+    // check if development version
+    checkDev();
+    // get scores
+    //getScores();
+
+
+    var myVar = setInterval(update, 5000);
+}
+
+// setup
+
+</script>
+</head>
+<body>
+
+    <nav id="navbar" class="navbar bg-dark navbar-dark">
+        <!-- Brand -->
+        <a id="brand" class="navbar-brand" href="#">Quiznet</a>
+
+        <!-- Toggler/collapsibe Button -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <!-- Navbar links -->
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="https://github.com/tcubed/quiznet/blob/master/README.md" target="_blank">Quiznet documentation</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://vimeo.com/400944887" target="_blank">Overview video</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="mailto:t3random@gmail.com">Support email: t3random@gmail.com</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="https://trueword.freehostia.com/">Trueword site</a>
+            </li>
+            
+          </ul>
+        </div>
+    </nav>
+
+<div class="container-fluid">
+
+    <div class="card-deck">
+        <div class="card">
+            <div class="card-body">
+                <!--<p>Pick unique quiz id (e.g. WGLD_myteam)</p>-->
+                <div class="form-group">
+                    <label for="quizid">
+                        <a href="#" data-toggle="popover" title="Quiz ID" 
+                            data-content="Quiz IDs separated by commas (e.g. WGLDA,WGLDB)">Quiz ID List</a>:
+                    </label>
+
+                    
+                    <input type="text" class="form-control-sm" id="quizids" value="myquizA,myquizB" onchange="createQuizCards()">
+                    
+
+
+                </div>
+                <!--style="display:flex; justify-content"-->
+                <div class="row largeDisplay">
+                    <div class="col-12">
+
+                        <table class="table table-bordered" id="largeScores">
+                            <thead>
+                                <tr><th>QuizID</th><th>QZ</th><th>Q</th><th>Team1</th><th>Team2</th><th>Team3</th></tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+
+
+<!--
+                        <div class="btn-group w-90 mx-auto">
+
+                            <button type="button" class="btn btn-primary btn-sm" id="team1sm">Team1: 20</button>
+                            <button type="button" class="btn btn-light btn-sm" id="team2sm">Team2: 20</button>
+                            <button type="button" class="btn btn-danger btn-sm" id="team3sm">Team3: 20</button>
+                        </div>
+                        
+                        <div class="btn-group w-90 mx-auto"></div>
+                            <button type="button" class="btn btn-light btn-sm" onclick="getScores()">
+                                <i class="material-icons" style="font-size:16px">refresh</i>
+                            </button>
+                        </div>
+                        -->
+                    </div>
+                </div>
+
+                <div class="row smallDisplay">
+                    <div class="col-12">
+                        <div class="card-columns" id="quizCards">
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <p><small>Status: <span id="devmsg"></span></small></p>
+        </div>
+    </div>
+
+</div>
+
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark d-fixed-bottom-sm">
+    <!--<a class="navbar-brand" href="#">Quiz on!</a>-->
+    <h6 style="font-size:x-small;color:#fff">Do not be anxious about anything, but in every situation, 
+         by prayer and petition,
+         with thanksgiving, present your requests to God. And the peace of God, which transcends 
+         all understanding, will guard your hearts and your minds in Christ Jesus. -- Phillipians 4:6-7</h6>
+</nav>
+
+<script>
+    $(document).ready(function(){
+        startup()
+    });
+</script>
+
+</body>
+</html>

@@ -16,8 +16,27 @@ function pushJump($quizfile){
     // jump request
     $quizzer = $_GET["q"];
     $t = $_GET["t"];
+
+    // put in "time_micro,quizzer" format for quiz file
     $txt=$t.','.$quizzer.'\n';
+    //$txt=$quizzer.' at '.date('m/d/Y h:i:s.u A',$t/1000).'.';
+    //$txt=$quizzer.' at '.date('h:i:s.u A',$t).'.';
+    //$txt='q='.((int)$t/1000).', system: '.time();
+
     file_put_contents($quizfile,$txt,FILE_APPEND);
+
+    // echo back human readable
+    // Instantiate a DateTime with microseconds.
+    //$d = new DateTime('2011-01-01T15:03:01.012345Z');
+    // Output the microseconds.
+    //echo $d->format('u'); // 012345
+    // Output the date with microseconds.
+    //echo $d->format('Y-m-d\TH:i:s.u'); // 2011-01-01T15:03:01.012345
+
+    $timeToSecond=date('m/d/Y h:i:s',$t/1000);
+    $usecond=round(($t/1000-(int)($t/1000))*1e3);
+    //$txt=$quizzer.' at '.date('m/d/Y h:i:s.u A',$t/1000).' ('.$t.').';
+    $txt=$quizzer.' at '.$timeToSecond.'.'.$usecond;
     echo 'jump logged: '.$txt;
     logVisitors($quizzer.':jump');
 }
@@ -118,15 +137,20 @@ function quizmasterReset($quizfile){
 //
 // SCORING FUNCTIONS
 //
-function setScore($quizid,$scores){
+function setQuizData($quizid,$quizData){
     //echo 'setScore<br>';
-    $fnscore=sys_get_temp_dir().'/quizScores_'.$quizid.".txt";
-    file_put_contents($fnscore,$scores);
+    $fnscore=sys_get_temp_dir().'/quizData_'.$quizid.".txt";
+    file_put_contents($fnscore,$quizData);
 }
-function getScore($quizid){
+function getQuizData($quizid){
     //echo 'getScore<br>';
-    $fnscore=sys_get_temp_dir().'/quizScores_'.$quizid.".txt";
-    echo file_get_contents($fnscore);
+    $fnquizData=sys_get_temp_dir().'/quizData_'.$quizid.".txt";
+    if(file_exists($fnquizData)){
+        echo file_get_contents($fnquizData);
+    }
+    else{
+        echo "{}";
+    }
 }
 
 //
@@ -227,12 +251,12 @@ if(array_key_exists("qmstamp",$_GET)){
 //
 // scorekeeper
 //
-if(array_key_exists("scores",$_POST)){
-    setScore($quizid,$_POST["scores"]);
+if(array_key_exists("quizData",$_POST)){
+    setQuizData($quizid,$_POST["quizData"]);
 }
 if(array_key_exists("getScore",$_POST)){
     $quizid = preg_replace("/[^A-Za-z0-9]/", '', $_POST['getScore']);
-    getScore($quizid);
+    getQuizData($quizid);
 }
 
 
