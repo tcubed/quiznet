@@ -80,7 +80,7 @@ function mytime(dt){
 // }
 function question() {
     var eb=document.getElementById('question')
-    
+    eb.disabled=true
     document.getElementById("benchMessage").innerHTML = 'Ready for jumps...';
 
     var xhttp = new XMLHttpRequest();
@@ -91,6 +91,7 @@ function question() {
             if(eb.classList.contains('btn-primary')==false){
                 eb.classList.add('btn-primary')
                 eb.textContent="Question";
+                eb.disabled=false
             }
             if(eb.classList.contains('btn-warning')){
                 eb.classList.remove('btn-warning')
@@ -112,7 +113,7 @@ function question() {
     if(eb.classList.contains('btn-primary')){
         eb.classList.remove('btn-primary');
         eb.classList.add('btn-warning');
-        eb.textContent="Don't touch me!";
+        //eb.textContent="Don't touch me!";
     }
     //else{
     //    eb.textContent="Question";

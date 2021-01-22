@@ -119,7 +119,7 @@ function quizmasterReset($quizfile){
         }
         usleep(5000);
         $jump=0;
-        for($i=0;$i<800;$i++){
+        for($i=0;$i<600;$i++){
             if(file_exists($quizfile)){
                 echo '{"msg":"beep"}';
                 $jump=1;

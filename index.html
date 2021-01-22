@@ -442,7 +442,9 @@ function setupGraphs(){
     };
     Plotly.newPlot(og,[offset],layout, {staticPlot: true})
 }
-
+function showStats(){
+    var cb=document.getElementById('checkboxStats')
+}
 function updateGraphs()
 {
     /*
@@ -705,29 +707,44 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
     <!-- DEVICE and SYNC INFO -->
     <div class="card small">
         <div class="card-body">
-
             <div class="row">
-                <!--<div class="col-3"><strong>DEVICE:</strong></div>
-                <div class="col-9" id="devmsg"></div>-->
-                <div class="col small"><strong>DEVICE: </strong><span id="devmsg"></span></div>
-            </div>
-            <div class="row">
-                <!--<div class="col-3"><strong>SERVER: </strong></div>
-                <div class="col-9" id="quizStatus"></div>-->
-                <div class="col small"><strong>SERVER: </strong><span id="quizStatus"></span></div>
-            </div>
-            <div class="row">
-                <div class="col small" >
-                    <div >
-                        <strong>SYNC: </strong><span id="syncstats"></span><span id="delaystats"></span>
+                <div class="col-9">
+                    <div class="row">
+                        <!--<div class="col-3"><strong>DEVICE:</strong></div>
+                        <div class="col-9" id="devmsg"></div>-->
+                        <div class="col small"><strong>DEVICE: </strong><span id="devmsg"></span></div>
                     </div>
+                    <div class="row">
+                        <!--<div class="col-3"><strong>SERVER: </strong></div>
+                        <div class="col-9" id="quizStatus"></div>-->
+                        <div class="col small"><strong>SERVER: </strong><span id="quizStatus"></span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col small"><strong>SYNC: </strong><span id="syncstats"></span><span id="delaystats"></span></div>
+                    </div>
+                    
+                </div>
+                <div class="col-3">
+                    <button data-toggle="collapse" data-target="#mygraph">Sync Graphs</button>
                 </div>
             </div>
-
+            <!--
+            <div class="row">
+                
+                <div class="col-3">
+                    <div class="form-check">
+                        <label class="form-check-label">
+                          <input id="checkboxStats" type="checkbox" class="form-check-input" value="" checked onclick="showStats();">Show stats
+                        </label>
+                    </div>
+                    <button data-toggle="collapse" data-target="#mygraph">Collapsible</button>
+                </div>
+            </div>
+            -->
         </div>
     </div>
 
-    <div id="mygraph" class="largeDisplay">
+    <div id="mygraph" class="collapse">
 
         <div class="row">
             <div class="col-sm-6">
