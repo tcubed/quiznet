@@ -18,13 +18,12 @@ The purpose of this package is to allow bible quizzers to practice and quiz with
 
 The Quiznet system was designed to work with variable-speed networks.  That is, some users have slow connections or older computers which could significantly impact quizzer jumps because of network lags.  Instead, we go around the problem, by avoiding the time-arrival issue completely.  When the quizzer jumps, we time-stamp the event, then send it on its way to the server and quizmaster -- it doesn't matter how long it takes, because the comparison will be on the time-stamp of the jump, and not when it arrived.
 
-There are three critical pieces to make this work:
+There are two critical pieces to make this work:
 
  1. All the clocks have to be synced so the time-stamps can be properly compared.
  2. The quizmaster has to know when a jump has occurred so they can halt reading the question.
- 3. We need an estimate of the audio lag each user experiences due to the conference call.
 
- The time syncing is done through estimating the offset between quizzers and quizmaster and the server using the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) algorithm.  When a quizzer jumps, their jump is recorded, the quizmaster will hear a beep.  Lastly, we know teleconference solutions experience some degree of audio lag.  The audio lag is estimated through an audio calibration to measure the delay the quizzers are experiencing.  All three of these pieces are handled in Quiznet.
+ The time syncing is done through estimating the offset between quizzers and quizmaster and the server using the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) algorithm.  When a quizzer jumps, their jump is recorded, and the quizmaster will hear a beep.  We know teleconference solutions experience some degree of audio lag.  However, those services will adaptively try to "catch up" and thus we can't properly handle it -- we'll just have to accept that they will try to minimize any audio lag.  
 
 Desktop View | Mobile View | Quizmaster (Mobile)
 ------------ | ----------- | -------------------
@@ -44,16 +43,10 @@ I would highly recommend reviewing Pacific Northwest's excellent [Virtual Quizzi
        are somewhat spaced out to allow 4 quizzers around the same laptop.
      - Put the cursor in the "jump zone".
    - If necessary, a mobile device can be used: enter your name.  There is a jump button.
-   - Audio calibration: teleconference calls will often have a lag, and different call-ins may have different lags.
-     This calibration is meant to level the field.
-      - Quizmasters: Press <b>Start</b> to initiate a beep sequence.  Press <b>Mark</b> at the first beep only.  Press <b>Stop</b> when needed.
-      - Quizzers: After the countdown, press <b>Mark</b> at each beep.
- 
-<img src="/images/audio_quizzer.png" alt="audio_quizzer" height="300"/>
  
 ### The "jump"
    - PC quizzers: press your jump key!  After the question is complete, click the mouse to reset for the next jump.
-   - Mobile quizzers: Press your jump button!  After the question is complete, press the "Reset" button.
+   - Mobile quizzers: Press your jump button!  It will reset itself after a short period.
    - For both: after you jump, the timestamp is shown after Device.  When you see "jump logged" after Server, you know your
      jump was recorded at the server.
 ### Quizmasters
@@ -67,7 +60,9 @@ I would highly recommend reviewing Pacific Northwest's excellent [Virtual Quizzi
 
 # Known Issues
 
- - Beep delay: The Safari browser on iPhone and Apple computers seem to play the beep after a delay -- however, it seems the time-stamp  happens immediately, so it is just a delay of the beep.  From various sources, it seems Safari reloads the beep sound each time the button is pressed, leading to the delay.  Again, the best situation is to quiz from a personal computer, not a mobile device.  Moreover, it may be best to use the teleconference chat application to signal the quizmaster (see discussion above).
+ - Beep delay: The Safari browser on iPhone and Apple computers seem to play the beep after a delay.  From various sources, it seems Safari reloads the beep sound each time the button is pressed, leading to the delay.  In addition, it seems there is a slight delay when using a mobile device jump button, so a short fixed offset has been applied to even the playing field somewhat.  Again, the best situation is to quiz from a personal computer, not a mobile device.
+ 
+ - Quizmasters double-clicking the "question" button: Don't do this.  You will find that NO quizzer jumps will be recorded.
 
 # FAQ
 
@@ -84,11 +79,10 @@ You should be able to use almost anything.  Many special characters are OK, too.
 quizmaster needs to be able to pronounce it!
 
 #### Can I quiz on my phone?
-Yes!  There is a mobile page which works in a manner very similar to the desktop version.  I don't know how responsive the
-touch screen is (which is out of my control), but I welcome any findings in this area so we can share recommendations.
+Yes!  There is a mobile page which works in a manner very similar to the desktop version.  However, it is recommended to use a personal computer if possible because of some delays noted above.  We've tried our best to compensate and make it even, but you've been warned.
 
 #### The beep is delayed.  Does that mean my jump was recorded late?
-This is a Known Issue (see above).  Rest assured, the page timestamps the jump as soon as a key is pressed.  The playing of the beep happens after that, and is dependent on the sound file and how it is played in the browser.  Our testing indicates the beep does lag the
+This is a Known Issue (see above).  Rest assured, the page timestamps the jump very soon after a key is pressed.  The playing of the beep happens noticably after that, and is dependent on the sound file and how it is played in the browser.  Our testing indicates the beep does lag the
 timestamp -- most notably on iPhones, and we suspect iOS using Safari.
 
 #### Does it matter what web browser I use?
@@ -98,9 +92,6 @@ The application has been tested on Chrome, FireFox, and Edge on a Windows 10 mac
 Most computers are time-synced through some central time server.  So wherever you are, urban or rural, your computer 
 will put a synchronized timestamp on your jump.  Quizzer jumps are sent to the server where the original timestamps are 
 compared, so any network lags should play a minimal role in determining who got the first jump.
-
-#### What is "audio calibration"?
-Zoom is a common video/audio conferencing solution.  The company shoots for no more than a 150ms delay, but sometimes (especially on the free plan) calls can get routed to remote servers causing significant delay.  Anecdotally, we tested a Zoom call on two laptops in within the same room, with internet-audio and no video (the best internet call I could manage), and we measured up to a 1.6s delay!  Quiznet audio calibration measures this delay and applies an additional offset to the time-stamp.  For technical details, see the answer below.
 
 ### Quizmasters
 #### How come I don't see all the quizzers who jumped?
@@ -113,5 +104,5 @@ These are provided for your benefit, to make it convenient to do timing from the
 #### What is SYNC and offset?
 Even for computers that are synced with a time server, there can be a discrepancy between "now" on your device and "now" on other's devices.  Clock synchronization across multiple devices in a diverse network is an important telecommunications issue and the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol) is a standard way of accomplishing this.  A simple implementation is used here to adjust the timestamps to be as close as possible to the time on the server.  The SYNC message reports an offset time in milliseconds of your device compared to the server.  This offset is applied to your timestamp, such that all quizzers have a timestamp that is referenced to the server.
 
-#### How is the audio calibration done?
-The quizmaster initiates a sound clip which plays "3, 2, 1, beep, beep, ... " for 20 beeps at 1 second intervals.  The clip needs to be heard over the teleconference, and both the QM and the quizzer computer mark the first beep with a time stamp.  The quizzer (not the quizmaster) continues to click for 10 or more beeps so we can get the median audio delay between the server-corrected quizmaster and quizzer times.  Note that for this reason, it is also ideal that the quizmaster is also using a personal computer (even though the page is formatted for mobile at the moment).
+#### Will refreshing the page help?
+It shouldn't be necessary (but won't hurt).  The page will sample the network offset and delay after every jump and reading of the benches, so it shouldn't in generally be necessary.
