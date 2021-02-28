@@ -67,14 +67,14 @@
 function submitJump() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-        txt= this.responseText
-        if(txt.length<1){txt='no response';}
-        document.getElementById("quizStatus").innerHTML = txt;
+        if (this.readyState == 4 && this.status == 200) {
+            txt= this.responseText
+            if(txt.length<1){txt='no response';}
+            document.getElementById("quizStatus").innerHTML = txt;
 
-        setTimeout(pollBenches,2000);
-        setTimeout(reset,2000);
-    }
+            setTimeout(pollBenches,2000);
+            setTimeout(reset,2000);
+        }
     };
     var e=document.getElementById('quizid')
     var quizid=e.value;
@@ -93,7 +93,7 @@ function jumpKeyPress(){
     if(M.ready){
         // get time
         M.jumpTime = new Date();
-        M.jumpTime.setTime(M.jumpTime.getTime()+M.medianNetworkOffset-M.medianAudioDelay+360)
+        M.jumpTime.setTime(M.jumpTime.getTime()+M.medianNetworkOffset-M.medianAudioDelay+M.mobileAdvantage)
 
         console.log('ready: jump at '+T.mytime(M.jumpTime))
         M.ready=false
@@ -161,12 +161,12 @@ function jumpButtonPress(){
 }
 function jumpKeyUp(){
     
-    console.log('keyup')
+    //console.log('keyup')
     //console.log(d)
     if(M.readJump==false){
         ez=document.getElementById('jumpZone')
         var keyp=ez.value[0]
-        console.log('detected keypress: ['+keyp+']')
+        //console.log('detected keypress: ['+keyp+']')
 
         // which jumper
         var iusr=M.jumperKeys.indexOf(keyp)
@@ -229,6 +229,7 @@ function reset(){
     //}
 
 }
+/*
 function testJump(){
 
     var dt=new Date();
@@ -293,6 +294,7 @@ function testJump(){
         }
     }, 1);
 }
+*/
 /*
 function getQmTimeStamp() {
     var xhttp = new XMLHttpRequest();
@@ -335,62 +337,39 @@ function sync_callback(){
     M.medianNetworkDelay=d3.median(T.networkDelay)
     M.medianNetworkOffset=d3.median(T.networkOffset)
 
-            //console.log('done!');
-    //console.log(T.networkOffset)
-    //console.log('median offset:'+M.medianNetworkOffset+'ms, median delay:'+M.medianNetworkDelay+'ms')
     var e=document.getElementById('syncstats')
     e.innerHTML='Offset: '+M.medianNetworkOffset.toFixed(0)+'ms, network delay: '+M.medianNetworkDelay.toFixed(0)+'ms';
 
-    submitStats();
+    submitNetworkStats();
 
-            
+    //
+    // re-enable the jumpzone and jumpbutton
+    //
+    ejz.value='';
+    ejz.style.backgroundColor='#FFF'
+    ejz.disabled=false
+    ejb.disabled=false
 
-            //ez.style.backgroundColor='#FFFFFF'
-            /*
-            if(ac.checked==true){
-                ez.value='Ready for audio calibration';
-            }
-            else{
-                ez.value='';
-                ez.disabled=false
-                ez.style.backgroundColor='#FFF'
-            }
-            */
-            //ez.readonly=false;
-            //changeAudioCheck();
-
-            //
-            // re-enable the jumpzone and jumpbutton
-            //
-            ejz.value='';
-            ejz.style.backgroundColor='#FFF'
-            ejz.disabled=false
-            ejb.disabled=false
-            //ejb.classList.add('btn-primary');
-
-            //
-            // show delay chart
-            //
-            //plotDelay(delay)
-            updateGraphs()
+    //
+    // show delay chart
+    //
+    networkGraphs()
 }
-
+/*
 function syncOne_callback(){
     // set jumpzone to readonly until sampling done
     M.medianNetworkDelay=d3.median(T.networkDelay)
     M.medianNetworkOffset=d3.median(T.networkOffset)
 
-            //console.log('done!');
-    //console.log(T.networkOffset)
-    //console.log('median offset:'+M.medianNetworkOffset+'ms, median delay:'+M.medianNetworkDelay+'ms')
     var e=document.getElementById('syncstats')
     e.innerHTML='Offset: '+M.medianNetworkOffset.toFixed(0)+'ms, network delay: '+M.medianNetworkDelay.toFixed(0)+'ms';
 
-    //submitStats();
-    updateGraphs()
+    //submitNetworkStats();
+    networkGraphs()
 }
-function setupGraphs(){
-
+*/
+function networkGraphs(){
+    // sync graphss
     var dg = document.getElementById('delaygraph');
     var delay={
         x: d3.range(T.networkDelay.length),
@@ -442,20 +421,6 @@ function setupGraphs(){
     };
     Plotly.newPlot(og,[offset],layout, {staticPlot: true})
 }
-function showStats(){
-    var cb=document.getElementById('checkboxStats')
-}
-function updateGraphs()
-{
-    /*
-    var og = document.getElementById('offsetgraph');
-    Plotly.restyle(og, {
-        x: d3.range(T.networkOffset.length),
-        y:T.networkOffset
-    });
-    */
-   setupGraphs();
-}
 
 function startup(){
     // check if development version
@@ -478,7 +443,7 @@ function startup(){
     T.sampleRoundTrip(sync_callback,30)
 
     //
-    setupGraphs()
+    networkGraphs()
 }
 
 // setup
@@ -486,6 +451,7 @@ var M={ready:true,
        readJump:false,
        jumperKeys:[],jumpTime:-1,quizzer:'',
        jumpSeq:[],seqStart:-1,qmTime:-1,
+       mobileAdvantage:100,
        medianNetworkDelay:0,
        medianNetworkOffset:0,
        medianAudioDelay:0}
@@ -728,19 +694,6 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
                     <button data-toggle="collapse" data-target="#mygraph">Sync Graphs</button>
                 </div>
             </div>
-            <!--
-            <div class="row">
-                
-                <div class="col-3">
-                    <div class="form-check">
-                        <label class="form-check-label">
-                          <input id="checkboxStats" type="checkbox" class="form-check-input" value="" checked onclick="showStats();">Show stats
-                        </label>
-                    </div>
-                    <button data-toggle="collapse" data-target="#mygraph">Collapsible</button>
-                </div>
-            </div>
-            -->
         </div>
     </div>
 

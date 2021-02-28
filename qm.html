@@ -83,11 +83,14 @@ function question() {
     eb.disabled=true
     document.getElementById("benchMessage").innerHTML = 'Ready for jumps...';
 
+    // reset timers
+    resetTimers();
+
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var obj=JSON.parse(this.responseText);
-            console.log(obj)
+            //console.log('question responseText:'+obj)
             if(eb.classList.contains('btn-primary')==false){
                 eb.classList.add('btn-primary')
                 eb.textContent="Question";
@@ -97,11 +100,11 @@ function question() {
                 eb.classList.remove('btn-warning')
             }
 
+            console.log(obj.msg)
             if(obj.msg=="no jump"){
                 document.getElementById("benchMessage").innerHTML = 'No one jumped.';
             }
             else{
-                console.log(obj.msg)
                 snd1.play()
             }
             //txt=benchMessage(obj.msg)
@@ -121,7 +124,8 @@ function question() {
 
     var e=document.getElementById('quizid')
     var quizid=e.value;
-
+    
+    // send message that this quiz needs a reset bc of a new question
     var url='quiznet.php?id='+quizid+'&r=2';
     console.log(url)
     xhttp.open("GET", url, true);
@@ -134,7 +138,7 @@ function pollBenches() {
     if (this.readyState == 4 && this.status == 200) {
         var obj=JSON.parse(this.responseText);
         //if(txt.length<1){txt='no response';}
-        console.log(obj)
+        //console.log(obj)
         
         txt=benchMessage(obj)
         document.getElementById("benchMessage").innerHTML = txt;
@@ -144,7 +148,7 @@ function pollBenches() {
     var quizid=e.value;
 
     var url='quiznet.php?id='+quizid+'&p=1';
-    console.log(url)
+    //console.log(url)
     xhttp.open("GET", url, true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send()
@@ -194,6 +198,7 @@ function qmTimeStamp() {
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send()
 }
+/*
 function beepSeq(){
     var b=document.getElementById("beepSeqStart")
 
@@ -219,6 +224,8 @@ function beepSeq(){
 
     }
 }
+*/
+
 function beepMark(){
     qmTimeStamp();
     document.getElementById('play').play();
@@ -237,7 +244,29 @@ function sync_callback(){
     var e=document.getElementById('syncstats')
     e.innerHTML='Offset: '+M.medianNetworkOffset.toFixed(0)+'ms, network delay: '+M.medianNetworkDelay.toFixed(0)+'ms';
 
-    submitStats();
+    submitNetworkStats();
+}
+function submitJump() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            txt= this.responseText
+            if(txt.length<1){txt='no response';}
+            //document.getElementById("quizStatus").innerHTML = txt;
+
+            pollBenches();
+            //setTimeout(pollBenches,2000);
+            //setTimeout(reset,2000);
+        }
+    };
+    var e=document.getElementById('quizid')
+    var quizid=e.value;
+
+    var url='quiznet.php?id='+quizid+'&q='+M.quizzer+'&t='+M.jumpTime.getTime();
+    //console.log(M.jumpTime)
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send()
 }
 function startup(){
     // set jumpzone to readonly until sampling done
@@ -252,7 +281,17 @@ function startup(){
     e.style.backgroundColor='#FFF'
 }
 // setup
-var M={
+//var M={
+//       medianAudioDelay:0}
+var M={//ready:true,
+       //readJump:false,
+       //jumperKeys:[],
+       jumpTime:-1,
+       quizzer:'buzzer',
+       //jumpSeq:[],seqStart:-1,qmTime:-1,
+       //mobileAdvantage:100,
+       medianNetworkDelay:0,
+       medianNetworkOffset:0,
        medianAudioDelay:0}
 
 var beepSeqStatus=false;
@@ -263,16 +302,17 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
 </script>
 
 <script language="javascript">
-    
     var password; 
     var pass1="cmaquiz"; 
-    password=prompt('Enter Password (contact t3random@gmail.com for access)',''); 
-    if (password==pass1) 
-        alert('Correct Password! Quiz on!'); 
-    else {
-        alert('Ok.  Goodbye!')
-        window.location="https://trueword.freehostia.com/"; 
-    } 
+    if(window.location.href.indexOf('/dev/')<0){
+        password=prompt('Enter Password (contact t3random@gmail.com for access)',''); 
+        if (password==pass1) 
+            alert('Correct Password! Quiz on!'); 
+        else {
+            alert('Ok.  Goodbye!')
+            window.location="https://trueword.freehostia.com/"; 
+        } 
+    }
     
 </script>
 
@@ -571,37 +611,60 @@ var snd2 = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkW
     </nav>
 
     <audio id="play" src="assets/beep-07.wav"></audio>
+    <!--
     <audio id="beepSeqFile" src="assets/beepIntro.mp3"></audio>
+    -->
 
     <script>
         // Set the date we're counting down to
         var MyTimer=[];
         function mytimer(delay){
+            // timer has started!
+            var startTimer = new Date();
+            //console.log('click time:'+startTimer)
+            //console.log('click: '+T.mytime(startTimer))
+            startTimer.setTime(startTimer.getTime()+M.medianNetworkOffset-M.medianAudioDelay)
+            console.log('start timer, server adjusted: '+T.mytime(startTimer))
+
             var countDownDate = new Date().getTime()+delay*1000;
-            console.log('countdowndate:'+countDownDate)
+            //console.log('countdowndate:'+countDownDate)
             // Update the count down every 1 second
             var idx=MyTimer.length;
             
             MyTimer[idx] = setInterval(function() {
                 // Get today's date and time
-                var now = new Date().getTime();
-                console.log('now:'+now)
+                var now=new Date().getTime();
+
+                var nowServer= new Date()
+                nowServer.setTime(now+M.medianNetworkOffset-M.medianAudioDelay)
+                
+
                 // Find the distance between now and the count down date
                 var distance = countDownDate - now;
-                
+                console.log('now:'+T.mytime(nowServer)+', distance:'+distance)
+
                 // Time calculations for days, hours, minutes and seconds
                 //var days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 //var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 //var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 //var seconds = Math.floor((distance % (1000 * 60)) / 1000);
                 var seconds = Math.ceil(distance / 1000);
+                
                 // Display the result in the element with id="demo"
                 var divt=document.getElementById("divtimer")
                 divt.innerHTML = seconds + "s ";
                 
                 // If the count down is finished, write some text
-                if (distance < 0) {
+                if (distance <= 0) {
                     clearInterval(MyTimer[idx]);
+
+                    // get time
+                    //M.jumpTime = new Date();
+                    //M.jumpTime.setTime(now+M.medianNetworkOffset-M.medianAudioDelay)
+                    M.jumpTime=nowServer;
+                    console.log('times up:'+T.mytime(nowServer))
+                    submitJump();
+
                     document.getElementById("divtimer").innerHTML = "DONE";
                     document.getElementById('play').play();
                 }
