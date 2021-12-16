@@ -6,6 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
@@ -23,6 +25,8 @@
     .card-body{padding:0.5rem;}
     .label{margin-bottom:0.1rem;}
     .form-group{margin-bottom:0.25rem;}
+
+    .table td, .table th{ padding: 0.1rem;}
     </style>
 
 <script>
@@ -34,47 +38,26 @@ function submitJump() {
         txt= this.responseText
         if(txt.length<1){txt='no response';}
         document.getElementById("quizStatus").innerHTML = txt;
+
+        setTimeout(pollBenches,2000);
     }
     };
     var e=document.getElementById('quizid')
     var quizid=e.value;
 
-    var url='quiznet.php?d='+quizid+'&q='+M.quizzer+'&t='+M.jumpTime.getTime();
+    var url='quiznet.php?id='+quizid+'&q='+M.quizzer+'&t='+M.jumpTime.getTime();
     //console.log(url)
     xhttp.open("GET", url, true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send()
-    //xhttp.send("fname=Henry&lname=Ford");
-
-    //xhttp.open("POST", "quiznet.php", true);
-    //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    //xhttp.send("fname=Henry&lname=Ford");
 }
 
-function mytime_old(d){
-    var txt=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()
-    txt+=','+d.getHours()+':'+d.getMinutes()+':'+(d.getSeconds()+d.getMilliseconds()/1000).toFixed(3)
-    return txt
-}
-// function mytime(dt){
-//     //console.log('mytime')
-//     //console.log(dt)
-//     //var txt=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()
-//     var sec=dt.getSeconds()
-//     if(sec<10){sec='0'+sec;}
-//     var msec=dt.getMilliseconds()
-//     if(msec<10){msec='0'+msec;}
-//     if(msec<100){msec='0'+msec;}
-//     var txt=dt.getHours()+':'+dt.getMinutes()+':'+sec+'.'+msec;
-//     //var txt=dt.getHours()+':'+dt.getMinutes()+':'+(dt.getSeconds()+dt.getMilliseconds()/1000).toFixed(3)
-//     return txt
-// }
 function jumpKeyPress(){
     //console.log('keypress')
     if(M.ready){
         // get time
         M.jumpTime = new Date();
-        M.jumpTime.setTime(M.jumpTime.getTime()+medianoffset)
+        M.jumpTime.setTime(M.jumpTime.getTime()+medianoffset-M.medianAudioDelay)
 
         console.log('ready: jump at '+mytime(M.jumpTime))
         M.ready=false
@@ -82,8 +65,9 @@ function jumpKeyPress(){
         //
         // play a sound
         //
-        document.getElementById('play').play();
-        //snd1.play()
+        //document.getElementById('play').play();
+        //beep();
+        snd1.play()
     }
     else{
         console.log('not ready')
@@ -183,34 +167,315 @@ function testJump(){
 
 
 }
+
+function getQmTimeStamp() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var obj=JSON.parse(this.responseText);
+            console.log('getQmTimeStamp:',obj)
+            M.qmTime=obj.time;
+        }
+    };
+    var e=document.getElementById('quizid')
+    var quizid=e.value;
+    var url='quiznet.php?id='+quizid+'&qmstamp=-1';
+    console.log(url)
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send()
+}
+function testJumpAudio(){
+    //var ez=document.getElementById('jumpzone')
+    var ejb=document.getElementById('jumpButton')
+    var ejr=document.getElementById('jumpReset')
+    var edm=document.getElementById('devicemsg')
+
+    var dt=(new Date()).getTime()+medianoffset;
+
+    if(M.jumpSeq.length==20){
+        M.jumpSeq=[];
+    }
+    M.jumpSeq.push(dt);
+    if(M.jumpSeq.length==1){
+        M.seqStart=dt;
+        M.qmTime=-1;
+        
+        //ez.style.backgroundColor='#AAAAAA'
+        edm.innerHTML='Calibrating audio...'
+        ejb.disabled=true;
+        ejr.disabled=true;
+    }
+    getQmTimeStamp();
+
+    // change log depending on whether qmTime is set
+    var audioDelay=[];
+    if(M.qmTime<0){
+        console.log('no qmTime yet')
+        for(var ii=0;ii<M.jumpSeq.length;ii++){
+            var d=((M.jumpSeq[ii]-M.seqStart)-(ii*1000)).toFixed(0);
+            audioDelay.push(d)
+        }
+    }
+    else{
+        console.log('qmTime read')
+        for(var ii=0;ii<M.jumpSeq.length;ii++){
+            //console.log(M.jumpSeq[ii]+','+medianoffset+','+M.qmTime)
+            //var dly=(M.jumpSeq[ii])-(M.qmTime+1000)
+            //console.log('('+M.jumpSeq[ii]+')-'+(M.qmTime+1000)+'='+dly)
+            var d=Number(((M.jumpSeq[ii]-M.qmTime)-(ii*1000)).toFixed(0));
+            audioDelay.push(d)
+        }
+    }
+    
+    //audioDelay.sort(d3.ascending);
+    var mndly=d3.median(audioDelay);
+    if(mndly>2000){
+        //var edm=document.getElementById('devmsg')
+        //edm.innerHTML="Can't use audio calibration.  Quizmaster needs to initiate."
+
+        txt='<div class="alert alert-danger alert-dismissible">'
+        txt+='<button type="button" class="close" data-dismiss="alert">&times;</button>'
+        txt+='<strong>Sorry!</strong> Cannot use audio calibration (estimated delay is over 2 seconds).  Quizmaster needs to initiate.</div>'
+        edm.innerHTML=txt
+
+        var ac=document.getElementById('audioCheck')
+        ac.checked=false
+        changeAudioCheck();
+        return
+    }
+    else{
+        M.medianAudioDelay=mndly;
+        console.log(audioDelay)
+    }
+
+    //var e=document.getElementById('seqdiv');
+    //e.innerHTML=((dt-M.seqStart)/1000-(M.jumpSeq.length-1)).toFixed(3);
+
+    var e=document.getElementById('delaystats')
+    e.innerHTML=', audio delay: '+(M.medianAudioDelay).toFixed(0)+'ms';
+
+    //
+    // If we have enough test jumps, open up the jumpzone
+    //
+    
+    if((M.jumpSeq.length>=10) && (ejb.disabled==true)){
+        //ez.style.backgroundColor='#FFFFFF'
+        //ez.value='';
+        ejb.classList.add('btn-primary')
+        ejb.disabled=false;
+        ejr.classList.add('btn-primary')
+        ejr.disabled=false;
+
+        edm.innerHTML='Ready!'
+    //ez.style.backgroundColor='#AAAAAA'
+    //ez.value='SYNCING...'
+    //ez.readonly=true;
+    //ejb.classList.remove('btn-primary')
+    //ejb.disabled=true
+    }
+}
+function resetJumpAudio(){
+    M.jumpSeq=[];
+    var ejb=document.getElementById('jumpButton')
+    ejb.classList.remove('btn-primary')
+    ejb.disabled=true;
+
+    var ejr=document.getElementById('jumpReset')
+    ejr.classList.remove('btn-primary')
+    ejr.disabled=true;
+}
+function pollBenches() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        var obj=JSON.parse(this.responseText);
+        txt=benchMessage(obj)
+        document.getElementById("benchMessage").innerHTML = txt;
+    }
+    };
+    var e=document.getElementById('quizid')
+    var quizid=e.value;
+
+    var url='quiznet.php?id='+quizid+'&p=1';
+    console.log(url)
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send()
+}
 function startup(){
+    console.log('startup!')
+    // set jumpzone to readonly until sampling done
+    var ejb=document.getElementById('jumpButton')
+    var ejr=document.getElementById('jumpReset')
+    var ac=document.getElementById('audioCheck')
+
+    var edm=document.getElementById('devicemsg')
+    //ez.style.backgroundColor='#AAAAAA'
+    //ez.value='SYNCING...'
+    //ez.readonly=true;
+    
+
+    var ess=document.getElementById('syncstats')
+    ess.innerHTML='SYNCING...'
+
     sampleRoundTrip(function(){
             //console.log('done!');
             //console.log(delay)
             console.log(offset)
             console.log('median offset:'+medianoffset+'ms, median delay:'+mediandelay+'ms')
-            var e=document.getElementById('syncstats')
-            e.innerHTML=' Offset: '+medianoffset+'ms';
+            
+            //var es=document.getElementById('syncstats')
+           // es.innerHTML=' Offset: '+medianoffset+'ms';
+            ess.innerHTML='Offset: '+medianoffset.toFixed(0)+'ms, network delay: '+mediandelay.toFixed(0)+'ms';
+
+            //ez.style.backgroundColor='#FFFFFF'
+            //ez.value='';
+            //ez.readonly=false;
+            //ez.disabled=false;
+            
+/*
+            if(ac.checked==true){
+                edm.innerHTML='<div class="spinner-grow text-info"></div><strong>Ready for audio calibration.</strong>'
+                if(ejb.classList.contains('btn-primary')){
+                    ejb.classList.remove('btn-primary')
+                    ejb.disabled=true
+                    ejr.classList.remove('btn-primary')
+                    ejr.disabled=true
+                }
+            }
+            else{
+
+                edm.innerHTML='Ready'
+                if(ejb.classList.contains('btn-primary')==false){
+                    ejb.classList.add('btn-primary')
+                    ejb.disabled=true
+                    ejr.classList.add('btn-primary')
+                    ejr.disabled=true
+                }
+                //ez.value='';
+                //ez.disabled=false
+                //ez.style.backgroundColor='#FFF'
+            }
+*/
+            changeAudioCheck();
+
         })
 }
+function changeAudioCheck(){
+    var e=document.getElementById('audioCheck');
+    var eam=document.getElementById('audioMark');
+    var ear=document.getElementById('audioReset');
+    //var ejz=document.getElementById('jumpZone');
+    var ejb=document.getElementById('jumpButton')
+    var ejr=document.getElementById('jumpReset')
 
+    var edm=document.getElementById('devicemsg')
+
+    if(e.checked){
+        //
+        // using audio calibration, lockdown jumpzone
+        //
+        console.log('now checked!')
+        if(eam.classList.contains('btn-primary')==false){
+            //eam.classList.remove('btn-secondary');
+            eam.classList.add('btn-primary');
+            eam.disabled=false
+            //ear.classList.remove('btn-secondary');
+            ear.classList.add('btn-primary');
+            ear.disabled=false
+        }
+        
+        //ejz.innerHTML='Ready for audio calibration';
+        //ejz.style.backgroundColor='#AAA'
+        ejb.disabled=true
+        ejb.classList.remove('btn-primary');
+        ejr.disabled=true
+        ejr.classList.remove('btn-primary');
+
+        //ejb.classList.add('btn-secondary');
+        edm.innerHTML='<div class="spinner-grow text-info"></div><strong>Ready for audio calibration.</strong>'
+    }
+    else{
+        //
+        // NOT using audio calibration, open up jumpzone
+        //
+        console.log('now unchecked')
+        if(eam.classList.contains('btn-primary')){
+            eam.classList.remove('btn-primary');
+            //eam.classList.add('btn-secondary');
+            eam.disabled=true
+            ear.classList.remove('btn-primary');
+            //ear.classList.add('btn-secondary');
+            ear.disabled=true
+        }
+        //ejz.innerHTML='';
+        //ejz.style.backgroundColor='#FFF'
+        ejb.disabled=false
+        ejb.classList.add('btn-primary');
+        ejr.disabled=false
+        ejr.classList.add('btn-primary');
+        //edm.innerHTML='Ready'
+
+        M.medianAudioDelay=0;
+    }
+}
 // setup
 var M={ready:true,
        readJump:false,
-       jumperKeys:[],jumpTime:-1,quizzer:''}
+       jumperKeys:[],jumpTime:-1,quizzer:'',
+       jumpSeq:[],seqStart:-1,qmTime:-1,
+       medianAudioDelay:-1}
 
 var snd1 = new Audio("data:audio/mpeg;base64,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wZ0G7jqlt/OcDIKX+/1NblSX+VKfQfP8xuJJGk7////rf////+PgXTv///1JThJJQainmySAB6imUyuVbVttUo7T4Csa821OuF88f62+CZHFnGf///mQgYIEO0SMF2NVy9NxYTdlqJ8AuS4zr//SJoTUJ+CaKKTcZvosrUPo8W/MUv0f033E9E/QpN6P///v/////WRR2mwUAYUABjabRu1vrOLKAF0kIdHjnEx/iNWo7jGn1////mApxNTJQQOU1Het/NoUFTMQs6Vja///THaGIl/0fojl8mjd/Jo8W+ZfpNpCajsz7////6kn/////WRRgDz//LD1KSTDjKOciSAKxdLx5S31uYqKIWj/+5JECgAC8V5M6g9rdFyr6Vo9rW6KtHcr5DEJQRkSpLRklSigvVc4QpmyPe9H3zHR1/in9P/8VNCMJOzYUDyVjfwHP0ZgiZt/3/+9EBnDKbegdUrckhgntHaQ9vX/X/9A/////+r/////mJ3/9ItRcoVRogAcmV9N8z0pvES8QQsKoMGXEymPQyWm6E4HQLqgpv/CZJAtYXQSwoF8e6SB56zABEoW+qgZjJAZovGr0Gl5/OjFKL3JwnaX9v7/X8y1f/////////49WAzMzEYYMZLq6CUANIqbDX7lisBIdraAEPwShTRc9WZ2vAqBc4NQ9GrUNaw0Czcrte0g1NEoiU8NFjx4NFh54FSwlOlgaCp0S3hqo8SLOh3/63f7P/KgKJxxhgGSnAFMCnIogwU5JoqBIDAuBIiNLETyFmiImtYiDTSlb8ziIFYSFv/QPC38zyxEOuPeVGHQ77r/1u/+kq49//6g4gjoVQSUMYQUSAP8PwRcZIyh2kCI2OwkZICZmaZxgnsNY8DmSCWX0idhtz3VTJSqErTSB//1X7TTTVVV//uSZB2P8xwRJ4HvYcItQlWBACM4AAABpAAAACAAADSAAAAEVf/+qCE000VVVVU0002//+qqqqummmmr///qqqppppoqqqqppppoqqATkEjIyIxBlBA5KwUEDBBwkFhYWFhUVFfiqhYWFhcVFRUVFv/Ff/xUVFRYWFpMQU1FMy45OS41qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg==");  
-
+var snd2 = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");  
 </script>
 </head>
 <body>
+
+    <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+        <!-- Brand -->
+        <a class="navbar-brand" href="#">Quiznet</a>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">Use Desktop</a>
+            </li>
+            
+        </ul>
+
+        <!-- Toggler/collapsibe Button -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <!-- Navbar links -->
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="https://github.com/tcubed/quiznet/blob/master/README.md" target="_blank">Quiznet documentation</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://vimeo.com/400944887" target="_blank">Overview video</a>
+            </li>
+            <!--
+            <li class="nav-item">
+              <a class="nav-link" href="#">Link</a>
+            </li>
+        -->
+          </ul>
+        </div>
+      </nav>
+
+
+<!--
 <div class="jumbotron text-center" style="margin-bottom:0">
     <h1>Quiznet Quiz</h1>
     <a href="index.html">Go to the Desktop version</a>
 </div>
+-->
 
 <div class="container-fluid">
-
+    <h6>Quizzer</h6>
     <div class="card-deck">
         <div class="card">
             <div class="card-body text-center">
@@ -224,64 +489,80 @@ var snd1 = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU
             </div>
 
         </div>
-    
-        <!--
-        <div class="card">
-            <div class="card-body">
-                <a href="#timesync" class="btn btn-primary" data-toggle="collapse">Time Synchronization</a>
-                <div id="timesync" class="collapse">
-                    The online quiz uses your machines clock to register your answer.  Please make sure your clock
-                    is synced online.
-                    <a href="#" class="btn btn-primary" data-toggle="popover" 
-                    title="Sync time in Windows 10" data-img="images/win10datetime.png">Windows 10</a>
-                </div>
-            </div>
-        </div>
-        -->
+        
         <div class="card">
             <div class="card-body text-center">
-                <button class="btn btn-primary" onclick="testJump();">Test Jump</button>
-                <div id="divtimer"></div>
-                
+                <div class="form-group">
+                    <label for="usr1">Quizzer Name:</label>
+                    <input type="text" class="form-control-sm" id="usr1" value="quizzer">
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="card">
-        <div class="card-header text-center">
-            <div class="form-group">
-                <label for="usr1">Quizzer Name:</label>
-                <input type="text" class="form-control-sm" id="usr1" value="quizzer">
+    
+
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 text-center">
+                        <button class="btn btn-primary" id="jumpButton" onclick="jumpKeyPress();">Jump</button>
+                    </div>
+                    <div class="col-6 text-center">
+                        <button class="btn btn-primary" id="jumpReset" onclick="reset();">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body text-center" id="benchMessage" style="font-size:12px">
             </div>
         </div>
     
-        <div class="card-body">
-            <div class="row">
-                <div class="col-6 text-center">
-                    <button class="btn btn-primary" onclick="jumpKeyPress();">Jump</button>
-                </div>
-                <div class="col-6 text-center">
-                    <button class="btn btn-primary" onclick="reset();">Reset</button>
+
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-check">
+                            <label class="form-check-label">
+                              <input type="checkbox" class="form-check-input" value="" id="audioCheck" onchange="changeAudioCheck();">Audio Calibration
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <button class="btn btn-primary" onclick="testJumpAudio();" id="audioMark">Mark</button>
+                    </div>
+                    <div class="col-3">
+                        <button class="btn btn-primary" onclick="resetJumpAudio();" id="audioReset">Reset</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card-footer">
-            <div class="row"><strong>DEVICE (i.e. when did I jump?)</strong></div>
-            <div class="row" id="benchStatus"></div>
-            <div class="row"><strong>SERVER (i.e. was my jump recorded?)</strong></div>
-            <div class="row" id="quizStatus"></div>
-            <div class="row"><strong>Sync stats:</strong><span id="syncstats"></span></div>
+        <div class="card">
+            <div class="card-footer">
+                <div class="row small"><strong>DEVICE:</strong><span id="devicemsg"></span></div>
+                <div class="row small" id="benchStatus"></div>
+                <div class="row small"><strong>SERVER:</strong></div>
+                <div class="row small" id="quizStatus"></div>
+                <div class="row small">
+                    <strong>SYNC:</strong><span id="syncstats"></span><span id="delaystats"></span>
+                </div>
+            </div>
         </div>
-
-        
-
     </div>
-
 </div>
-
+<!--
 <div class="jumbotron text-center" style="margin-bottom:0">
     <p>Intended for C&MA Bible Quizzing.</p>
+</div>
+-->
+<div class="card bg-dark">
+    <!--<a class="navbar-brand" href="#">Quiz on!</a>-->
+    <h6 style="font-size:x-small;color:#fff">Do not be anxious about anything, but in every situation, by prayer and petition,
+         with thanksgiving, present your requests to God. 7 And the peace of God, which transcends 
+         all understanding, will guard your hearts and your minds in Christ Jesus. -- Phillipians 4:6-7</h6>
 </div>
 
 <!--
@@ -300,9 +581,10 @@ var snd1 = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU
         //https://mdbootstrap.com/docs/jquery/javascript/popovers/
         $('[data-toggle="popover"]').popover();
 
+        startup();
     });
 
-    startup();
+    
 
 </script>
 
